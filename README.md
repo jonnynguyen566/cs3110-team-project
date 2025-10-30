@@ -1,2 +1,5 @@
 # cs3110-team-project
 Team Project for CS3110
+
+Team Members:
+Sharon Chen (zc522)
