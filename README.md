@@ -5,3 +5,4 @@ Team Members:
 Sharon Chen (zc522)
 Rhea Agrawal (ra677)
 Arshdeep Kaur (ak2676)
+Jonny Nguyen (jn566)
