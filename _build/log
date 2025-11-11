@@ -1,6 +1,0 @@
-# dune init project final_project
-# OCAMLPARAM: unset
-# Shared cache: enabled-except-user-rules
-# Shared cache location: /Users/arshdeepkaur/.cache/dune/db
-# Workspace root: /Users/arshdeepkaur/cs3110/final_project
-# Auto-detected concurrency: 8
