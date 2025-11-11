@@ -1,4 +1,3 @@
-(executable
- (public_name final_project)
- (name main)
- (libraries final_project))
+(executables
+ (names main gui)
+ (libraries cs3110teamproject bogue))

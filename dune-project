@@ -1,6 +1,6 @@
 (lang dune 3.20)
 
-(name final_project)
+(name cs3110teamproject)
 
 (generate_opam_files true)
 
@@ -16,7 +16,8 @@
 (documentation https://url/to/documentation)
 
 (package
- (name final_project)
+ (name cs3110teamproject)
+ (allow_empty)
  (synopsis "A short synopsis")
  (description "A longer description")
  (depends ocaml)
