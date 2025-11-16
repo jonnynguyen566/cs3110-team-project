@@ -50,13 +50,13 @@ let () =
   L.auto_scale main_layout;
   L.disable_resize main_layout;
   let treasure_room, treasure_state =
-    toggle_image ~x:1000 ~y:600 ~w:400 ~h:200
+    toggle_image ~x:800 ~y:470 ~w:325 ~h:163
       ~closed_image:"images/chest_closed.png"
       ~open_image:"images/chest_open.png" main_layout ()
   in
 
   let casket_room, casket_state =
-    toggle_image ~x:570 ~y:340 ~w:610 ~h:360
+    toggle_image ~x:370 ~y:240 ~w:570 ~h:300
       ~closed_image:"images/casket_closed.png"
       ~open_image:"images/casket_open.png" main_layout ()
   in
