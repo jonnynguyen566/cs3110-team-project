@@ -40,13 +40,15 @@ let toggle_image ?w ?h ?x ?y ?(noscale = false) ~closed_image ~open_image
 
 (*actual display logic*)
 let () =
-  let bg_w, bg_h = (1920, 960) in
+  let bg_w, bg_h = (1280, 720) in
   let background =
     L.resident ~w:bg_w ~h:bg_h
       (W.image ~w:bg_w ~h:bg_h ~noscale:true "images/starting_room.jpg")
   in
 
   let main_layout = L.superpose ~w:bg_w ~h:bg_h [ background ] in
+  L.auto_scale main_layout;
+  L.disable_resize main_layout;
   let treasure_room, treasure_state =
     toggle_image ~x:1000 ~y:600 ~w:400 ~h:200
       ~closed_image:"images/chest_closed.png"
@@ -60,4 +62,4 @@ let () =
   in
 
   L.set_rooms main_layout [ background; treasure_room; casket_room ];
-  main_layout |> Bogue.of_layout |> Bogue.run
+  main_layout |> Bogue.of_layout |> Bogue.run 
