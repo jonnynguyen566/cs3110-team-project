@@ -94,18 +94,21 @@ let check_puzzle_status game (p : puzzle) =
         p.status)
       else p.status (*Should still return Locked*)
 
-(*Cow puzzle id should be 1*)
-let cow_puzzle : puzzle = {
-  puzzle_id = new_puzzle_id ();
-  puzzle_type = Trivia ("What is a female camel called?", "cow");
-  status = Unlocked;
-  deps = [];
-}
+(*Chest puzzle id should be 1*)
+let chest_puzzle : puzzle =
+  {
+    puzzle_id = new_puzzle_id ();
+    puzzle_type = Trivia ("What is a female camel called?", "cow");
+    status = Unlocked;
+    deps = [];
+  }
 
 (*Casket puzzle id should be 2*)
-let casket_puzzle : puzzle = {
-  puzzle_id = new_puzzle_id ();
-  puzzle_type = Math ("Does the following definition type check: let x = 2 +. 3.0", 0);
-  status = Unlocked;
-  deps = [];
-}
+let casket_puzzle : puzzle =
+  {
+    puzzle_id = new_puzzle_id ();
+    puzzle_type =
+      Math ("Does the following definition type check: let x = 2 +. 3.0", 0);
+    status = Unlocked;
+    deps = [];
+  }
