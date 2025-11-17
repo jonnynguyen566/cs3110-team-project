@@ -21,7 +21,12 @@ let status p = p.status
 let make ~id ~puzzle_type ~deps =
   { id; ptype = puzzle_type; deps; status = Locked }
 
+<<<<<<< HEAD
 let normalize s = String.lowercase_ascii (String.trim s)
+=======
+(* Normalize string for text puzzles *)
+let normalize s = s |> String.trim |> String.lowercase_ascii
+>>>>>>> 1a5e316 (implemented each interface)
 
 let check_answer p answer =
   match p.ptype with
@@ -33,6 +38,10 @@ let check_answer p answer =
 
 let mark_solved p = p.status <- Solved
 
+<<<<<<< HEAD
+=======
+(* Unlock only if all dependencies solved *)
+>>>>>>> 1a5e316 (implemented each interface)
 let try_unlock solved_ids p =
   match p.status with
   | Locked ->
