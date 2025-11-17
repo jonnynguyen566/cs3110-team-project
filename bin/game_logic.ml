@@ -1,3 +1,12 @@
+let global_puzzleid_counter = ref 0
+
+(*Helper Function: Use this function every time when creating a new puzzle to
+  ensure we are generating unique puzzle ids*)
+let new_puzzle_id () =
+  let pid = !global_puzzleid_counter in
+  global_puzzleid_counter := pid + 1;
+  pid
+
 (*Instantiating types for puzzles*)
 type puzzle_status =
   | Locked (*Puzzle hasn't been revealed yet/isn't visible*)
@@ -84,3 +93,19 @@ let check_puzzle_status game (p : puzzle) =
         (*Updates status to unlocked and returns unlocked*)
         p.status)
       else p.status (*Should still return Locked*)
+
+(*Cow puzzle id should be 1*)
+let cow_puzzle : puzzle = {
+  puzzle_id = new_puzzle_id ();
+  puzzle_type = Trivia ("What is a female camel called?", "cow");
+  status = Unlocked;
+  deps = [];
+}
+
+(*Casket puzzle id should be 2*)
+let casket_puzzle : puzzle = {
+  puzzle_id = new_puzzle_id ();
+  puzzle_type = Math ("Does the following definition type check: let x = 2 +. 3.0", 0);
+  status = Unlocked;
+  deps = [];
+}
