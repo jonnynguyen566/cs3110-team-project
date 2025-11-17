@@ -47,17 +47,15 @@ let word_to_int =
     List.assoc_opt s table
 
 let check_answer p answer =
-  let ans = normalize answer in     (* trim + lowercase ONCE *)
+  let ans = normalize answer in
+  (* trim + lowercase ONCE *)
   match p.ptype with
-  | Riddle (_, correct) | Trivia (_, correct) ->
-      ans = normalize correct
-
+  | Riddle (_, correct) | Trivia (_, correct) -> ans = normalize correct
   | Math (_, n) -> (
       match (int_of_string_opt ans, word_to_int ans) with
       | Some x, _ -> x = n
       | None, Some x -> x = n
-      | _ -> false
-    )
+      | _ -> false)
 
 let mark_solved p = p.status <- Solved
 
