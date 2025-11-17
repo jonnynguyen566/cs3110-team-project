@@ -19,11 +19,7 @@ let make ~id ~description ~puzzles ~room_deps =
 
 let try_unlock room ~solved_puzzles =
   match room.status with
-<<<<<<< HEAD
   | Accessible -> ()
-=======
-  | Accessible -> () (* already open *)
->>>>>>> 1a5e316 (implemented each interface)
   | Inaccessible ->
       if List.for_all (fun id -> List.mem id solved_puzzles) room.room_deps then
         room.status <- Accessible
