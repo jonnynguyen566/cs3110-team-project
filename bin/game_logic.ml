@@ -40,6 +40,7 @@ type game_state = {
   rooms : room list; (* List of all rooms in the game, static*)
 }
 
+(*Room related functions*)
 let rec get_next_room game_state =
   let rooms = game_state.rooms in
   let n = List.length rooms in
@@ -50,3 +51,36 @@ let rec get_next_room game_state =
     if room.status = Accessible then room else loop idx
   in
   loop current_idx
+
+(*Puzzle related functions*)
+let find_puzzle (game : game_state) (pid : int) : puzzle option =
+  let rec search_rooms = function
+    | [] -> None
+    | r :: rs -> (
+        match List.find_opt (fun p -> p.puzzle_id = pid) r.puzzles with
+        | Some p -> Some p
+        | None -> search_rooms rs)
+  in
+  search_rooms game.rooms
+
+(* Helper function: returns true if all dependencies are solved, and false if
+   not*)
+let deps_satisfied game (p : puzzle) =
+  List.for_all
+    (fun dep_id ->
+      match find_puzzle game dep_id with
+      | Some dep_puzzle -> dep_puzzle.status = Solved
+      | None -> false)
+    p.deps
+
+(* Check if puzzle is accessible. If locked, verify dependencies are satisfied
+   and update status to unlocked if possible *)
+let check_puzzle_status game (p : puzzle) =
+  match p.status with
+  | Unlocked | Solved -> p.status
+  | Locked ->
+      if deps_satisfied game p then (
+        p.status <- Unlocked;
+        (*Updates status to unlocked and returns unlocked*)
+        p.status)
+      else p.status (*Should still return Locked*)
