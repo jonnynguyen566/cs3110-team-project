@@ -5,32 +5,48 @@ type puzzle_status =
   | Solved (*Puzzle marked as solved, can use for unlocking dependent puzzles*)
 
 type puzzle_type =
-  | Riddle of string * string  (*question, answer*)
-  | Math of string * int       (*question, numeric answer*)
-  | Trivia of string * string  (*question, answer*)
+  | Riddle of string * string (*question, answer*)
+  | Math of string * int (*question, numeric answer*)
+  | Trivia of string * string (*question, answer*)
 
+(*Will ensure that puzzle_id will start at 0*)
 type puzzle = {
-  puzzle_id : string;
+  puzzle_id : int;
   puzzle_type : puzzle_type;
   mutable status : puzzle_status;
+  deps : int list;
+      (*List of puzzle IDs that must be solved before this puzzle can be
+        attempted*)
 }
 
 (*Instantiating types for rooms*)
 type room_status =
   | Inaccessible (*Room cannot be accessed yet*)
-  | Accessible   (*Room can be accessed by the player*)
+  | Accessible (*Room can be accessed by the player*)
 
+(*Will ensure that room_id will start at 0*)
 type room = {
-  room_id : string;
+  room_id : int;
   mutable status : room_status;
   description : string;
   puzzles : puzzle list; (* List of puzzles in the room *)
+  room_deps : int list (* puzzle IDs required to unlock room *);
 }
 
-(*Game state determines which room the player is currently in which rooms have been unlocked (meaning they can access those rooms)*)
+(*Game state determines which room the player is currently in which rooms have
+  been unlocked (meaning they can access those rooms)*)
 type game_state = {
   mutable current_room : room;
-  mutable unlocked_rooms : room list;
+  rooms : room list; (* List of all rooms in the game, static*)
 }
 
-(*Function to check if a given answer to a puzzle is correct*)
+let rec get_next_room game_state =
+  let rooms = game_state.rooms in
+  let n = List.length rooms in
+  let current_idx = game_state.current_room.room_id in
+  let rec loop i =
+    let idx = (i + 1) mod n in
+    let room = List.nth rooms idx in
+    if room.status = Accessible then room else loop idx
+  in
+  loop current_idx
