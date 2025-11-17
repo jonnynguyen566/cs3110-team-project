@@ -47,28 +47,16 @@ let goto_next_room gs =
 let solve_puzzle gs ~puzzle_id =
   if not (List.mem puzzle_id gs.solved) then gs.solved <- puzzle_id :: gs.solved;
 
-<<<<<<< HEAD
-=======
-  (* Unlock puzzles inside rooms *)
->>>>>>> 1a5e316 (implemented each interface)
   List.iter
     (fun room ->
       List.iter (fun p -> Puzzle.try_unlock gs.solved p) (Room.puzzles room))
     gs.rooms;
 
-<<<<<<< HEAD
-=======
-  (* Unlock rooms dependent on puzzles *)
->>>>>>> 1a5e316 (implemented each interface)
   List.iter
     (fun room -> Room.try_unlock room ~solved_puzzles:gs.solved)
     gs.rooms
 
 let is_finished gs =
-<<<<<<< HEAD
-=======
-  (* Game is finished when ALL puzzles in ALL rooms are solved *)
->>>>>>> 1a5e316 (implemented each interface)
   let all_puzzles = List.concat (List.map Room.puzzles gs.rooms) in
   List.for_all (fun p -> Puzzle.status p = Puzzle.Solved) all_puzzles
 
