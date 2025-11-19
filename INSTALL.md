@@ -5,12 +5,15 @@ The project is an OCaml dune workspace with a GUI written on top of the
 compiler toolchain, pull every OCaml dependency (including Bogue), and explain
 how to build/run the executables. If you use macOS and don't have Homebrew installed, please install it now via the instructions on https://brew.sh/. 
 
+IF RUNNING ON WINDOWS: Please use the CS 3110 virtual machine to run the program!
+IF RUNNING ON MAC: The following instructions are sufficient!
+
 ## 1. Prerequisites
 
 1. **OPAM 2.1+** – the OCaml package manager (macOS via `brew install opam`,
    Linux via distribution packages).
 2. **Dune 3.20+** – installed automatically by OPAM, but listed explicitly.
-3. **SDL2 native libraries** – needed for Bogue. Install once per machine:
+3. **SDL2 native libraries** – needed for Bogue. Install once per machine if not already:
    - macOS: `brew install sdl2 sdl2_image sdl2_ttf sdl2_mixer`
    - Ubuntu/Debian: `sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev`
 
