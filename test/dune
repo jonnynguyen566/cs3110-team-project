@@ -1,2 +1,2 @@
 (test
- (name test_final_project) (libraries ounit2 escape_room))
+ (name test_final_project) (libraries ounit2 game_logic))

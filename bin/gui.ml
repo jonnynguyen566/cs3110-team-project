@@ -1,4 +1,5 @@
 open Bogue
+open Game_logic
 module W = Widget
 module L = Layout
 

@@ -1,4 +1,4 @@
 (library
- (name escape_room)
+ (name game_logic)
  (modules puzzle room game_state hints game_logic)
 )
