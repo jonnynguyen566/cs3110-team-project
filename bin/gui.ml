@@ -80,13 +80,10 @@ let () =
   let intro_bg = W.image ~noscale:true "images/starting_room_blurry.png" in
   let intro_bg_layout = L.resident ~w:bg_w ~h:bg_h intro_bg in
 
-  (* scale intro screens to the window so Windows does not crop to the
-     top-left *)
+  (* scale intro screens to the window so Windows does not crop to the top-left *)
   let beginning = W.image ~w:bg_w ~h:bg_h "images/click_to_begin.png" in
   let beginning_layout = L.resident beginning in
-  let screen1 =
-    L.superpose ~w:bg_w ~h:bg_h [ intro_bg_layout; beginning_layout ]
-  in
+  let screen1 = L.superpose ~w:bg_w ~h:bg_h [ intro_bg_layout; beginning_layout ] in
 
   let instructions = W.image ~w:bg_w ~h:bg_h "images/instructions.png" in
   let instr_layout = L.resident instructions in
