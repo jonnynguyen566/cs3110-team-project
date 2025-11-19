@@ -14,7 +14,6 @@ type puzzle_status =
   | Solved (*Puzzle marked as solved, can use for unlocking dependent puzzles*)
 
 type puzzle_type =
-  | Riddle of string * string (*question, answer*)
   | Math of string * int (*question, numeric answer*)
   | Trivia of string * string (*question, answer*)
 
@@ -40,6 +39,11 @@ type room = {
   description : string;
   puzzles : puzzle list; (* List of puzzles in the room *)
   room_deps : int list (* puzzle IDs required to unlock room *);
+}
+
+type answer_result = {
+  is_correct : bool;
+  message : string;
 }
 
 (*Game state determines which room the player is currently in which rooms have
@@ -94,6 +98,13 @@ let check_puzzle_status game (p : puzzle) =
         p.status)
       else p.status (*Should still return Locked*)
 
+let get_puzzle_status (game : game_state) (pid : int) : puzzle_status =
+  match find_puzzle game pid with
+  | None -> Locked (*If puzzle not found, treat as locked*)
+  | Some p -> check_puzzle_status game p
+
+
+
 (*Chest puzzle id should be 1*)
 let chest_puzzle : puzzle =
   {
@@ -110,5 +121,27 @@ let casket_puzzle : puzzle =
     puzzle_type =
       Math ("Does the following definition type check: let x = 2 +. 3.0", 0);
     status = Unlocked;
-    deps = [];
+    deps = [ chest_puzzle.puzzle_id ];
   }
+
+let submit_answer game pid answer =
+  match find_puzzle game pid with
+  | None -> false
+  | Some puzzle -> (
+      match puzzle.puzzle_type with
+      | Trivia (_, correct_answer) ->
+          if
+            String.lowercase_ascii answer
+            = String.lowercase_ascii correct_answer
+          then (
+            puzzle.status <- Solved;
+            true)
+          else false
+      | Math (_, correct_answer) -> (
+          try
+            let ans_int = int_of_string answer in
+            if ans_int = correct_answer then (
+              puzzle.status <- Solved;
+              true)
+            else false
+          with Failure _ -> false))

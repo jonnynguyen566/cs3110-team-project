@@ -1,2 +1,3 @@
 (library
- (name cs3110teamproject))
+ (name game_logic)
+)
