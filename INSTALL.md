@@ -16,9 +16,9 @@ how to build/run the executables. If you use macOS and don't have Homebrew insta
 
 ## 2. Install OCaml dependencies (including Bogue)
 
-`opam install . --deps-only` will pull everything listed by dune, but you can
-install Bogue directly as well:
+`opam install . --deps-only` will pull everything listed by dune. But also run the following commands.
 
+Install Bogue (the GUI package):
 ```bash
 opam install bogue
 ```
