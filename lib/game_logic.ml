@@ -25,6 +25,7 @@ type puzzle = {
   deps : int list;
       (*List of puzzle IDs that must be solved before this puzzle can be
         attempted*)
+  success_message : string;
 }
 
 (*Instantiating types for rooms*)
@@ -103,8 +104,6 @@ let get_puzzle_status (game : game_state) (pid : int) : puzzle_status =
   | None -> Locked (*If puzzle not found, treat as locked*)
   | Some p -> check_puzzle_status game p
 
-
-
 (*Chest puzzle id should be 1*)
 let chest_puzzle : puzzle =
   {
@@ -112,6 +111,9 @@ let chest_puzzle : puzzle =
     puzzle_type = Trivia ("What is a female camel called?", "cow");
     status = Unlocked;
     deps = [];
+    success_message =
+      "Riches uncovered, but danger remains. Seek the sarcophagus before it's \
+       too late.";
   }
 
 (*Casket puzzle id should be 2*)
@@ -122,11 +124,13 @@ let casket_puzzle : puzzle =
       Math ("Does the following definition type check: let x = 2 +. 3.0", 0);
     status = Unlocked;
     deps = [ chest_puzzle.puzzle_id ];
+    success_message =
+      "You've awakened the mummy... now seize your chance to escape the tomb!";
   }
 
 let submit_answer game pid answer =
   match find_puzzle game pid with
-  | None -> false
+  | None -> { is_correct = false; message = "Puzzle not found." }
   | Some puzzle -> (
       match puzzle.puzzle_type with
       | Trivia (_, correct_answer) ->
@@ -135,13 +139,25 @@ let submit_answer game pid answer =
             = String.lowercase_ascii correct_answer
           then (
             puzzle.status <- Solved;
-            true)
-          else false
+            { is_correct = true; message = puzzle.success_message })
+          else { is_correct = false; message = "Incorrect answer." }
       | Math (_, correct_answer) -> (
           try
             let ans_int = int_of_string answer in
             if ans_int = correct_answer then (
               puzzle.status <- Solved;
-              true)
-            else false
-          with Failure _ -> false))
+              { is_correct = true; message = puzzle.success_message })
+            else { is_correct = false; message = "Incorrect answer." }
+          with Failure _ -> { is_correct = false; message = "Invalid input." }))
+
+let init_game () : game_state =
+  let starting_room =
+    {
+      room_id = 0;
+      status = Accessible;
+      description = "You are in the starting room.";
+      puzzles = [ chest_puzzle; casket_puzzle ];
+      room_deps = [];
+    }
+  in
+  { current_room = starting_room; rooms = [ starting_room ] }

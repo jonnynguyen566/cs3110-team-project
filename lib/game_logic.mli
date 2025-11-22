@@ -15,6 +15,7 @@ type puzzle = {
   puzzle_type : puzzle_type;
   mutable status : puzzle_status;
   deps : int list;
+  success_message : string;
 }
 
 (* Room types and status *)
@@ -22,17 +23,17 @@ type room_status =
   | Inaccessible
   | Accessible
 
+type answer_result = {
+  is_correct : bool;
+  message : string;
+}
+
 type room = {
   room_id : int;
   mutable status : room_status;
   description : string;
   puzzles : puzzle list;
   room_deps : int list;
-}
-
-type answer_result = {
-  is_correct : bool;
-  message : string;
 }
 
 (* Game state *)
@@ -58,10 +59,12 @@ val check_puzzle_status : game_state -> puzzle -> puzzle_status
 (* Update and return the puzzle's status (unlock if deps satisfied). *)
 
 val get_puzzle_status : game_state -> int -> puzzle_status
-(* Get the status of a puzzle by id. Helps reconvert the option none/some type
-   to puzzle_status *)
+(* Return the puzzle's current status without updating. *)
 
 val chest_puzzle : puzzle
 val casket_puzzle : puzzle
-val submit_answer : game_state -> int -> string -> bool
-(* Submit an answer for puzzle id; return true if correct and marks solved. *)
+val submit_answer : game_state -> int -> string -> answer_result
+(* Submit an answer to a puzzle by id. Returns whether the answer is correct
+   along with a message. *)
+
+val init_game : unit -> game_state
