@@ -4,15 +4,14 @@ module W = Widget
 module L = Layout
 
 (** type for state for objects that can be toggled *)
-type toggle_state =
+(* type toggle_state =
   | Closed
-  | Open
-
+  | Open *)
+(* 
 type answer_result = {
   is_correct : bool;
   message : string;
-}
-(** type for whether user inputted right or wrong answer *)
+} *)
 (** type for whether user inputted right or wrong answer *)
 
 (** type for room state*)
@@ -63,9 +62,7 @@ let puzzle_popup message on_submit parent_layout () =
 
 (*general function for when a image triggers a hint/popup (default image and
   then clicked image)*)
-let toggle_image ?w ?h ?x ?y ?(noscale = false) ~closed_image ~open_image
-    ~puzzle_message ~on_answer room_layout () =
-let toggle_image ?w ?h ?x ?y ?(noscale = false) ~closed_image ~open_image
+(* let toggle_image ?w ?h ?x ?y ?(noscale = false) ~closed_image ~open_image
     ~puzzle_message ~on_answer room_layout () =
   let img = W.image ?w ?h ~noscale closed_image in
   let state = ref Closed in
@@ -102,7 +99,7 @@ let toggle_image ?w ?h ?x ?y ?(noscale = false) ~closed_image ~open_image
         W.update img
   in
   W.connect_main img img on_click Trigger.buttons_up |> W.add_connection img;
-  (L.resident ?x ?y img, state)
+  (L.resident ?x ?y img, state) *)
 
 (** another image toggling, except this time it changes the background, not just
     the image itself*)
@@ -140,6 +137,7 @@ let toggle_image_with_bg_change ?w ?h ?x ?y ?(noscale = false) ~closed_image
 (* actual display logic *)
 (* actual display logic *)
 let () =
+  let backend_game = Game_logic.init_game () in
   let bg_w, bg_h = (1280, 720) in
   let current_state = ref Intro1 in
   let intro_bg = W.image ~noscale:true "images/starting_room_blurry.png" in
@@ -194,39 +192,20 @@ let () =
   in
 
   let treasure_room, treasure_state =
+    let treasure_room =
     toggle_image ~x:800 ~y:470 ~w:325 ~h:163
       ~closed_image:"images/chest_closed.png"
       ~open_image:"images/chest_open.png"
-      ~puzzle_message:
-        "To unlock the chest, answer this question: What is a female camel \
-         called?"
-      ~open_image:"images/chest_open.png"
-      ~puzzle_message:
-        "To unlock the chest, answer this question: What is a female camel \
-         called?"
-      ~on_answer:(fun answer ->
-        if String.lowercase_ascii answer = "cow" then
-          {
-            is_correct = true;
-            message =
-              "Riches uncovered, but danger remains. Seek the sarcophagus \
-               before it's too late.";
-          }
-        else { is_correct = false; message = "Wrong answer: " ^ answer })
-          {
-            is_correct = true;
-            message =
-              "Riches uncovered, but danger remains. Seek the sarcophagus \
-               before it's too late.";
-          }
-        else { is_correct = false; message = "Wrong answer: " ^ answer })
+      ~puzzle_message:"To unlock the chest, answer this question: What is a female camel called?"
+      ~game_state:backend_game
+      ~puzzle_id:Game_logic.chest_puzzle.puzzle_id
       screen3 ()
   in
   in
 
   let casket_room, casket_state =
     toggle_image ~x:370 ~y:240 ~w:570 ~h:300
-      ~closed_image:"images/casket_closed.png"
+      ~closed_image:"images/casket_closed.png"  
       ~open_image:"images/casket_open.png"
       ~puzzle_message:
         "To open the sarcophagus, determine whether this definition type \
