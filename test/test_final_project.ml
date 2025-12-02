@@ -626,6 +626,7 @@ let tests =
          >:: test_is_finished_true_when_all_solved;
          "Returns false when there are some unsolved puzzles"
          >:: test_is_finished_false_when_unfinished;
-       ]
+        ]
+
 
 let _ = run_test_tt_main tests

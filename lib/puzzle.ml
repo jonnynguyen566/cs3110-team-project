@@ -1,4 +1,5 @@
 (*Instantiating types for puzzles*)
+(*Instantiating types for puzzles*)
 type puzzle_status =
   | Locked (*Puzzle hasn't been revealed yet/isn't visible*)
   | Unlocked (*Puzzle is unlocked and can be interacted with*)

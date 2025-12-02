@@ -1,3 +1,4 @@
 (executables
  (names main gui)
- (libraries game_logic bogue))
+ (libraries escape_room bogue)
+)
