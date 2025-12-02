@@ -23,3 +23,7 @@ let try_unlock room ~solved_puzzles =
   | Inaccessible ->
       if List.for_all (fun id -> List.mem id solved_puzzles) room.room_deps then
         room.status <- Accessible
+
+(*Is the room passed in the argument accessible? Returns bool*)
+let is_accessible r =
+  match r.status with Accessible -> true | Inaccessible -> false

@@ -5,7 +5,7 @@ open Hints
 type t = {
   mutable current_room : Room.room;
   rooms : Room.room list;
-  mutable solved : int list;
+  mutable solved : int list; (*Global list of solved puzzle ids -> in case some puzzles are dependent across different rooms*)
 }
 
 let current_room gs = gs.current_room
