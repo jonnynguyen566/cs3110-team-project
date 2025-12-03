@@ -21,6 +21,7 @@ type game_state =
   | Intro2
   | StartingRoom
   | CorridorRoom
+  | StairwayRoom
 
 (*actual pop up for when the user toggles an image that has a hint*)
 let puzzle_popup message on_submit parent_layout () =
@@ -102,6 +103,39 @@ let toggle_image ?w ?h ?x ?y ?(noscale = false) ~closed_image ~open_image
   W.connect_main img img on_click Trigger.buttons_up |> W.add_connection img;
   (L.resident ?x ?y img, state)
 
+(** another image toggling, except this time it changes the background, not just
+    the image itself*)
+let toggle_image_with_bg_change ?w ?h ?x ?y ?(noscale = false) ~closed_image
+    ~open_image ~bg_widget ~new_bg_image ~puzzle_message ~on_answer room_layout
+    () =
+  let img = W.image ?w ?h ~noscale closed_image in
+  let state = ref Closed in
+  let on_click _ _ _ =
+    match !state with
+    | Closed ->
+        puzzle_popup puzzle_message
+          (fun answer ->
+            let result = on_answer answer in
+            if result.is_correct then begin
+              (* Change the doorknob image *)
+              Image.set_file (W.get_image img) open_image;
+              (* Change the background image *)
+              Image.set_file (W.get_image bg_widget) new_bg_image;
+              state := Open;
+              W.update img;
+              W.update bg_widget
+            end;
+            result.message)
+          room_layout ()
+        |> ignore
+    | Open ->
+        Image.set_file (W.get_image img) closed_image;
+        state := Closed;
+        W.update img
+  in
+  W.connect_main img img on_click Trigger.buttons_up |> W.add_connection img;
+  (L.resident ?x ?y img, state)
+
 (* actual display logic *)
 (* actual display logic *)
 let () =
@@ -135,6 +169,13 @@ let () =
   in
   let corridor_bg_layout = L.resident ~w:bg_w ~h:bg_h corridor_bg in
   let screen4 = L.superpose ~w:bg_w ~h:bg_h [ corridor_bg_layout ] in
+
+  (* stairway room *)
+  let stairway_bg =
+    W.image ~w:bg_w ~h:bg_h ~noscale:true "images/cobweb_staircase_closed.png"
+  in
+  let stairway_bg_layout = L.resident ~w:bg_w ~h:bg_h stairway_bg in
+  let screen5 = L.superpose ~w:bg_w ~h:bg_h [ stairway_bg_layout ] in
 
   let navigation_arrow ~x ~y ~image ~target_room ~target_screen ~main_layout ()
       =
@@ -222,8 +263,8 @@ let () =
       ~closed_image:"images/lock_closed.png" ~open_image:"images/lock_open.png"
       ~puzzle_message:
         "To open the lock, enter the numbers you obtained from the \
-         heiroglyphics in the corridor. Use the format XXX where X is a single \
-         digit."
+         heiroglyphics in the corridor. Use the format XXXX where X is a \
+         single digit."
       ~on_answer:(fun answer ->
         if String.lowercase_ascii answer = "6229" then
           {
@@ -294,9 +335,8 @@ let () =
     toggle_image ~x:900 ~y:120 ~w:140 ~h:167 ~closed_image:"images/h_4.png"
       ~open_image:"images/h4_dark.png"
       ~puzzle_message:
-        "To decode this hieroglyphic, answer this question: \
-         How many rows of eyelashes does a camel have to protect them \
-         from the sand?"
+        "To decode this hieroglyphic, answer this question: How many rows of \
+         eyelashes does a camel have to protect them from the sand?"
       ~on_answer:(fun answer ->
         if String.lowercase_ascii answer = "2" then
           {
@@ -310,6 +350,67 @@ let () =
       screen4 ()
   in
 
+  let doorknob_room, doorknob_state =
+    toggle_image_with_bg_change ~x:910 ~y:280 ~w:40 ~h:80
+      ~closed_image:"images/doorknob.png" ~open_image:"images/transparent.png"
+      ~bg_widget:stairway_bg ~new_bg_image:"images/stairway.jpg"
+      ~puzzle_message:
+        "To open the door, evaluate this expression: let x = 3 in let x = x + \
+         4 in x"
+      ~on_answer:(fun answer ->
+        if String.lowercase_ascii answer = "7" then
+          {
+            is_correct = true;
+            message = "The door creaks open, revealing a way forward!";
+          }
+        else { is_correct = false; message = "Wrong answer: " ^ answer })
+      screen5 ()
+  in
+
+  let torch_room, torch_state =
+    toggle_image ~x:100 ~y:200 ~w:140 ~h:167
+      ~closed_image:"images/unlit_torch.png" ~open_image:"images/lit_torch.png"
+      ~puzzle_message:
+        "To light this torch, answer this question: What OCaml type represents \
+         a value that may or may not exist?"
+      ~on_answer:(fun answer ->
+        if
+          String.lowercase_ascii answer = "option"
+          || String.lowercase_ascii answer = "option type"
+          || String.lowercase_ascii answer = "options"
+        then
+          {
+            is_correct = true;
+            message =
+              "The lit torch helps you see more clearly. You can now see the \
+               spider blocking your path!";
+          }
+        else { is_correct = false; message = "Wrong answer: " ^ answer })
+      screen5 ()
+  in
+
+  let spider_room, spider_state =
+    toggle_image ~x:1000 ~y:100 ~w:167 ~h:167
+      ~closed_image:"images/hanging_spider.png"
+      ~open_image:"images/transparent.png"
+      ~puzzle_message:
+        "To remove the spider, answer this question: Which OCaml concept \
+         ensures that once a value is created, it cannot be changed?"
+      ~on_answer:(fun answer ->
+        if
+          String.lowercase_ascii answer = "immutability"
+          || String.lowercase_ascii answer = "immutable"
+        then
+          {
+            is_correct = true;
+            message =
+              "Correct! The spider retreats, clearing your path forward. Now \
+               you must open the door to escape this room!";
+          }
+        else { is_correct = false; message = "Wrong answer: " ^ answer })
+      screen5 ()
+  in
+
   let main_layout = L.superpose ~w:bg_w ~h:bg_h [ screen1 ] in
   L.auto_scale main_layout;
   L.disable_resize main_layout;
@@ -319,10 +420,25 @@ let () =
       ~target_room:CorridorRoom ~target_screen:screen4 ~main_layout ()
   in
 
+  let arrow_to_stairway =
+    navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
+      ~target_room:StairwayRoom ~target_screen:screen5 ~main_layout ()
+  in
+
   L.set_rooms screen3
     [ main_bg_layout; treasure_room; casket_room; arrow_to_corridor ];
   L.set_rooms screen4
-    [ corridor_bg_layout; lock_room; h1_room; h2_room; h3_room; h4_room ];
+    [
+      corridor_bg_layout;
+      lock_room;
+      h1_room;
+      h2_room;
+      h3_room;
+      h4_room;
+      arrow_to_stairway;
+    ];
+  L.set_rooms screen5
+    [ stairway_bg_layout; doorknob_room; spider_room; torch_room ];
 
   let transition_to_intro2 _ _ _ =
     current_state := Intro2;
