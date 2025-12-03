@@ -578,6 +578,36 @@ let test_is_finished_false_when_unfinished _ =
 let tests =
   "test suite"
   >::: [
+         (*Puzzle Tests*)
+         "make riddle basic" >:: test_make_riddle_basic;
+         "check answer riddle" >:: test_check_answer_riddle;
+         "check answer math" >:: test_check_answer_math;
+         "check answer trivia" >:: test_check_answer_trivia;
+         "try unlock no deps" >:: test_try_unlock_no_deps;
+         "try unlock with unsolved deps" >:: test_try_unlock_with_unsolved_deps;
+         "try unlock with solved deps" >:: test_try_unlock_with_solved_deps;
+         "try unlock with multiple deps" >:: test_try_unlock_with_multiple_deps;
+         "try unlock already unlocked" >:: test_try_unlock_already_unlocked;
+         "try unlock already solved" >:: test_try_unlock_already_solved;
+         "mark solved" >:: test_mark_solved;
+         (*Room Tests*)
+         "make room basic" >:: test_make_room_basic;
+         "room fulfilled no puzzles" >:: room_fulfilled_no_puzzles;
+         "room fulfilled not fulfilled" >:: room_fulfilled_not_fulfilled;
+         "room fulfilled is fulfilled" >:: room_fullfilled_is_fulfilled;
+         "try unlock room no deps" >:: test_try_unlock_room_no_deps;
+         "try unlock accessible room" >:: test_try_unlock_accessible_room;
+         "try unlock inaccessible deps solved"
+         >:: test_try_unlock_inaccessible_deps_solved;
+         "try unlock inaccessible deps unsolved"
+         >:: test_try_unlock_inaccessible_deps_unsolved;
+         "is accessible false" >:: test_is_accessible_false;
+         "is accessible true" >:: test_is_accessible_true;
+         "attempt enter inaccessible deps unsolved"
+         >:: test_attempt_enter_inaccessible_deps_unsolved;
+         "attempt enter inaccessible deps solved"
+         >:: test_attempt_enter_inaccessible_deps_solved;
+         "attempt enter accessible" >:: test_attempt_enter_accessible;
          (* Hint Tests *)
          "Basic register and get hint" >:: test_register_and_get_hint;
          "An invalid hint should return none" >:: test_get_invalid_hint;
