@@ -6,7 +6,7 @@ type room = {
   id : int;
   description : string;
   puzzles : Puzzle.puzzle list;
-  room_deps : int list;
+  room_deps : int list; (*Rooms DEPEND ON PUZZLES, NOT OTHER ROOMS; this is an int list of puzzle ids that must be solved to unlock this room*)
   mutable status : room_status;
 }
 
@@ -17,6 +17,11 @@ let puzzles r = r.puzzles
 let make ~id ~description ~puzzles ~room_deps =
   { id; description; puzzles; room_deps; status = Inaccessible }
 
+
+(*Helper function used to check if all puzzles in a room have been solved*)
+let room_fulfilled room =
+  List.for_all (fun p -> Puzzle.status p = Puzzle.Solved) room.puzzles
+
 let try_unlock room ~solved_puzzles =
   match room.status with
   | Accessible -> ()
@@ -26,4 +31,15 @@ let try_unlock room ~solved_puzzles =
 
 (*Is the room passed in the argument accessible? Returns bool*)
 let is_accessible r =
-  match r.status with Accessible -> true | Inaccessible -> false
+  match r.status with
+  | Accessible -> true
+  | Inaccessible -> false
+
+
+(*This is the function to attempt to enter a room whenever the
+  arrow for the next room is clicked*)
+let attempt_enter room ~solved_puzzles =
+  (*First try to unlock the room*)
+  try_unlock room ~solved_puzzles;
+  (*Return whether the room is accessible after the attempt without mutating*)
+  is_accessible room

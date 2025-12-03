@@ -1,5 +1,6 @@
 open OUnit2
 open Escape_room.Puzzle
+open Escape_room.Room
 
 (*Helper Functions for creating puzzles to test with*)
 let mk_riddle ?(deps = []) id q a =
@@ -132,6 +133,105 @@ let test_mark_solved _ =
 (* ------------------------------------------------------------- *)
 (* ROOM MODULE TEST                                              *)
 (* ------------------------------------------------------------- *)
+(*Room Creation Tests--------------------------------------------*)
+
+(*room_fulfilled tests-------------------------------------------*)
+let room_fulfilled_no_puzzles _ =
+  let room = mk_room 1 "Empty Room" [] in
+  assert_equal true (Escape_room.Room.room_fulfilled room)
+
+let room_fulfilled_not_fulfilled _ =
+  let p1 = mk_riddle 1 "What has keys but can't open locks?" "piano" in
+  let p2 = mk_math 2 "What is 2 + 2?" 4 in
+  let room = mk_room 2 "Puzzle Room" [ p1; p2 ] in
+  (* Neither puzzle is solved yet *)
+  assert_equal false (Escape_room.Room.room_fulfilled room)
+
+let room_fullfilled_is_fulfilled _ =
+  let p1 = mk_riddle 1 "What has keys but can't open locks?" "piano" in
+  let p2 = mk_math 2 "What is 2 + 2?" 4 in
+  let room = mk_room 3 "Puzzle Room" [ p1; p2 ] in
+  (* Unlock and solve both puzzles *)
+  Escape_room.Puzzle.try_unlock [] p1;
+  Escape_room.Puzzle.mark_solved p1;
+  Escape_room.Puzzle.try_unlock [] p2;
+  Escape_room.Puzzle.mark_solved p2;
+  assert_equal true (Escape_room.Room.room_fulfilled room)
+
+(*try_unlock tests-----------------------------------------------*)
+let test_try_unlock_room_no_deps _ =
+  let room = mk_room 1 "No Deps Room" [] in
+  Escape_room.Room.try_unlock room ~solved_puzzles:[];
+  assert_equal Escape_room.Room.Accessible (Escape_room.Room.status room)
+
+let test_try_unlock_accessible_room _ =
+  let p1 = mk_riddle 1 "What has keys but can't open locks?" "piano" in
+  let p2 = mk_math 2 "What is 2 + 2?" 4 in
+  let room = mk_room 1 "Already Accessible Room" [ p1; p2 ] in
+  Escape_room.Puzzle.try_unlock [] p1;
+  Escape_room.Puzzle.mark_solved p1;
+  room.status <- Escape_room.Room.Accessible;
+  Escape_room.Room.try_unlock room ~solved_puzzles:[];
+  assert_equal Escape_room.Room.Accessible (Escape_room.Room.status room)
+
+let test_try_unlock_inaccessible_deps_solved _ =
+  let p1 = mk_riddle 1 "What has keys but can't open locks?" "piano" in
+  let p2 = mk_math 2 "What is 2 + 2?" 4 in
+  let room = mk_room ~room_deps:[ 1; 2 ] 2 "Dependent Room" [ p1; p2 ] in
+  Escape_room.Puzzle.try_unlock [] p1;
+  Escape_room.Puzzle.mark_solved p1;
+  Escape_room.Puzzle.try_unlock [] p2;
+  Escape_room.Puzzle.mark_solved p2;
+  Escape_room.Room.try_unlock room ~solved_puzzles:[ 1; 2 ];
+  assert_equal Escape_room.Room.Accessible (Escape_room.Room.status room)
+
+let test_try_unlock_inaccessible_deps_unsolved _ =
+  let p1 = mk_riddle 1 "What has keys but can't open locks?" "piano" in
+  let p2 = mk_math 2 "What is 2 + 2?" 4 in
+  let room = mk_room ~room_deps:[ 1; 2 ] 2 "Dependent Room" [ p1; p2 ] in
+  Escape_room.Puzzle.try_unlock [] p1;
+  Escape_room.Puzzle.mark_solved p1;
+  (* p2 remains unsolved *)
+  Escape_room.Room.try_unlock room ~solved_puzzles:[ 1 ];
+  assert_equal Escape_room.Room.Inaccessible (Escape_room.Room.status room)
+
+(*is_accessible tests--------------------------------------------*)
+let test_is_accessible_false _ =
+  let room = mk_room 1 "Inaccessible Room" [] in
+  assert_equal false (Escape_room.Room.is_accessible room)
+
+let test_is_accessible_true _ =
+  let room = mk_room 1 "Accessible Room" [] in
+  room.status <- Escape_room.Room.Accessible;
+  assert_equal true (Escape_room.Room.is_accessible room)
+
+(*attempt_enter tests--------------------------------------------*)
+let test_attempt_enter_inaccessible_deps_unsolved _ =
+  let p1 = mk_riddle 1 "What has keys but can't open locks?" "piano" in
+  let p2 = mk_math 2 "What is 2 + 2?" 4 in
+  let room = mk_room ~room_deps:[ 1; 2 ] 2 "Dependent Room" [ p1; p2 ] in
+  Escape_room.Puzzle.try_unlock [] p1;
+  Escape_room.Puzzle.mark_solved p1;
+  (* p2 remains unsolved *)
+  let can_enter =
+    Escape_room.Room.attempt_enter room ~solved_puzzles:[ Escape_room.Puzzle.puzzle_id p1 ]
+  in
+  assert_equal false can_enter;
+  assert_equal Escape_room.Room.Inaccessible (Escape_room.Room.status room)
+
+let test_attempt_enter_inaccessible_deps_solved _ =
+  let p1 = mk_riddle 1 "What has keys but can't open locks?" "piano" in
+  let p2 = mk_math 2 "What is 2 + 2?" 4 in
+  let room = mk_room ~room_deps:[ 1; 2 ] 2 "Dependent Room" [ p1; p2 ] in
+  Escape_room.Puzzle.try_unlock [] p1;
+  Escape_room.Puzzle.mark_solved p1;
+  Escape_room.Puzzle.try_unlock [] p2; 
+  Escape_room.Puzzle.mark_solved p2;
+  let can_enter =
+    Escape_room.Room.attempt_enter room ~solved_puzzles:[ Escape_room.Puzzle.puzzle_id p1; Escape_room.Puzzle.puzzle_id p2 ]
+  in
+  assert_equal true can_enter;
+  assert_equal Escape_room.Room.Accessible (Escape_room.Room.status room)
 
 (* ------------------------------------------------------------- *)
 (* TEST SUITE                                                    *)
@@ -140,6 +240,7 @@ let test_mark_solved _ =
 let tests =
   "test suite"
   >::: [
+         (*Puzzle Tests*)
          "make riddle basic" >:: test_make_riddle_basic;
          "check answer riddle" >:: test_check_answer_riddle;
          "check answer math" >:: test_check_answer_math;
@@ -151,6 +252,19 @@ let tests =
          "try unlock already unlocked" >:: test_try_unlock_already_unlocked;
          "try unlock already solved" >:: test_try_unlock_already_solved;
          "mark solved" >:: test_mark_solved;
+         (*Room Tests*)
+         "room fulfilled no puzzles" >:: room_fulfilled_no_puzzles;
+         "room fulfilled not fulfilled" >:: room_fulfilled_not_fulfilled;
+         "room fulfilled is fulfilled" >:: room_fullfilled_is_fulfilled;
+         "try unlock room no deps" >:: test_try_unlock_room_no_deps;
+         "try unlock accessible room" >:: test_try_unlock_accessible_room;
+          "try unlock inaccessible deps solved" >:: test_try_unlock_inaccessible_deps_solved;
+          "try unlock inaccessible deps unsolved" >:: test_try_unlock_inaccessible_deps_unsolved;
+          "is accessible false" >:: test_is_accessible_false;
+          "is accessible true" >:: test_is_accessible_true;
+          "attempt enter inaccessible deps unsolved" >:: test_attempt_enter_inaccessible_deps_unsolved;
+          "attempt enter inaccessible deps solved" >:: test_attempt_enter_inaccessible_deps_solved;
+
        ]
 
 let _ = run_test_tt_main tests

@@ -5,21 +5,30 @@ open Hints
 type t = {
   mutable current_room : Room.room;
   rooms : Room.room list;
-  mutable solved : int list; (*Global list of solved puzzle ids -> in case some puzzles are dependent across different rooms*)
+  mutable solved : int list; (*Global list of solved puzzle ids*)
 }
 
 let current_room gs = gs.current_room
 let solved_puzzles gs = gs.solved
+let all_rooms gs = gs.rooms
+
+(*Helper getter for GUI to access to room_id only, prevents exposing the whole
+  room object and giving frontend access to mutable field*)
+let get_current_room_id gs = Room.room_id gs.current_room
+
+let accessible_rooms gs =
+  List.filter (fun r -> Room.status r = Accessible) gs.rooms
 
 let init ~rooms ~start =
   let start_room = List.find (fun r -> Room.room_id r = start) rooms in
   start_room.status <- Accessible;
   { current_room = start_room; rooms; solved = [] }
 
-let all_rooms gs = gs.rooms
+let get_room gs id = List.find_opt (fun r -> Room.room_id r = id) gs.rooms
+let set_current_room gs room = gs.current_room <- room
 
 let goto_next_room gs =
-  let accessible = List.filter (fun r -> Room.status r = Accessible) gs.rooms in
+  let accessible = accessible_rooms gs in
   match accessible with
   | [] -> ()
   | rs ->

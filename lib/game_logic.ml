@@ -67,3 +67,12 @@ let submit_answer gs pid answer =
 
         { is_correct = true; message = msg })
       else { is_correct = false; message = "Incorrect answer." }
+
+(*Game logic for changing rooms*)
+let goto_next_room gs = Game_state.goto_next_room gs
+let current_room_id gs = Game_state.get_current_room_id gs
+
+let is_room_accessible gs id =
+  match Game_state.get_room gs id with
+  | None -> false
+  | Some r -> Room.is_accessible r
