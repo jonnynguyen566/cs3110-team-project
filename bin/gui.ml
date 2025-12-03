@@ -15,7 +15,6 @@ type answer_result = {
 
 (** type for room state*)
 type game_state =
-type game_state =
   | Intro1
   | Intro2
   | StartingRoom
@@ -39,19 +38,7 @@ let puzzle_popup message on_submit parent_layout () =
         (* Display the result message in the feedback widget *)
         W.set_text feedback result)
   in
-  let submit_button =
-    W.button "Submit" ~action:(fun _ ->
-        let answer = W.get_text input in
-        let result = on_submit answer in
-        (* Display the result message in the feedback widget *)
-        W.set_text feedback result)
-  in
   let button_layout = L.resident submit_button in
-
-  let content =
-    L.tower [ question; input_layout; button_layout; feedback_layout ]
-  in
-
 
   let content =
     L.tower [ question; input_layout; button_layout; feedback_layout ]
@@ -80,25 +67,13 @@ let toggle_image ?w ?h ?x ?y ?(noscale = false) ~closed_image ~open_image
             result.message)
           room_layout ()
         |> ignore
-        puzzle_popup puzzle_message
-          (fun answer ->
-            let result = on_answer answer in
-            (* Only open if answer is correct *)
-            if result.is_correct then begin
-              Image.set_file (W.get_image img) open_image;
-              state := Open;
-              W.update img
-            end;
-            result.message)
-          room_layout ()
-        |> ignore
     | Open ->
         Image.set_file (W.get_image img) closed_image;
         state := Closed;
         W.update img
   in
   W.connect_main img img on_click Trigger.buttons_up |> W.add_connection img;
-  (L.resident ?x ?y img, state) *)
+  (L.resident ?x ?y img, state)
 
 (** another image toggling, except this time it changes the background, not just
     the image itself*)
@@ -133,7 +108,6 @@ let toggle_image_with_bg_change ?w ?h ?x ?y ?(noscale = false) ~closed_image
   W.connect_main img img on_click Trigger.buttons_up |> W.add_connection img;
   (L.resident ?x ?y img, state)
 
-(* actual display logic *)
 (* actual display logic *)
 let () =
   let bg_w, bg_h = (1280, 720) in
@@ -207,7 +181,6 @@ let () =
         else { is_correct = false; message = "Wrong answer: " ^ answer })
       screen3 ()
   in
-  in
 
   let casket_room, casket_state =
     toggle_image ~x:370 ~y:240 ~w:570 ~h:300
@@ -216,21 +189,7 @@ let () =
       ~puzzle_message:
         "To open the sarcophagus, determine whether this definition type \
          checks: let x = 2 +. 3.0"
-      ~puzzle_message:
-        "To open the sarcophagus, determine whether this definition type \
-         checks: let x = 2 +. 3.0"
       ~on_answer:(fun answer ->
-        if
-          String.lowercase_ascii answer = "no"
-          || String.lowercase_ascii answer = "false"
-        then
-          {
-            is_correct = true;
-            message =
-              "You've awakened the mummy... now seize your chance to escape \
-               the tomb!";
-          }
-        else { is_correct = false; message = "Wrong answer: " ^ answer })
         if
           String.lowercase_ascii answer = "no"
           || String.lowercase_ascii answer = "false"
@@ -435,20 +394,12 @@ let () =
     L.set_rooms main_layout [ screen3 ]
   in
 
-
   (* Connect click handlers to screens *)
-  W.connect_main beginning beginning
-    (fun ev x y -> if !current_state = Intro1 then transition_to_intro2 ev x y)
-    Trigger.buttons_up
   W.connect_main beginning beginning
     (fun ev x y -> if !current_state = Intro1 then transition_to_intro2 ev x y)
     Trigger.buttons_up
   |> W.add_connection beginning;
 
-  W.connect_main instructions instructions
-    (fun ev x y ->
-      if !current_state = Intro2 then transition_to_starting_room ev x y)
-    Trigger.buttons_up
   W.connect_main instructions instructions
     (fun ev x y ->
       if !current_state = Intro2 then transition_to_starting_room ev x y)

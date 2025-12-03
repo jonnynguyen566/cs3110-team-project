@@ -1,4 +1,4 @@
 (executables
  (names main gui)
- (libraries escape_room bogue)
+ (libraries cs3110teamproject bogue)
 )

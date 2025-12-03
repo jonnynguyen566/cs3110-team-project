@@ -3,32 +3,10 @@ open Cs3110teamproject.Hints
 open Cs3110teamproject.Puzzle
 open Cs3110teamproject.Room
 open Cs3110teamproject.Game_state
-open Escape_room.Puzzle
-open Escape_room.Room
-
-(*Helper Functions for creating puzzles to test with*)
-let mk_riddle ?(deps = []) id q a =
-  Escape_room.Puzzle.make ~id ~puzzle_type:(Riddle (q, a)) ~deps
-
-let mk_trivia ?(deps = []) id q a =
-  Escape_room.Puzzle.make ~id ~puzzle_type:(Trivia (q, a)) ~deps
-
-let mk_math ?(deps = []) id q n =
-  Escape_room.Puzzle.make ~id ~puzzle_type:(Math (q, n)) ~deps
-
-(*Helper Functions for creating rooms to test with*)
-let mk_room ?(room_deps = []) id desc puzzles =
-  Escape_room.Room.make ~id ~description:desc ~puzzles ~room_deps
-
 
 (*Helper Functions for creating puzzles to test with*)
 let mk_riddle ?(deps = []) id q a =
   Cs3110teamproject.Puzzle.make ~id ~puzzle_type:(Riddle (q, a)) ~deps
-
-let mk_unlocked_riddle id q a =
-  let r = mk_riddle id q a in
-  mark_solved r;
-  r
 
 let mk_trivia ?(deps = []) id q a =
   Cs3110teamproject.Puzzle.make ~id ~puzzle_type:(Trivia (q, a)) ~deps
@@ -40,9 +18,14 @@ let mk_math ?(deps = []) id q n =
 let mk_room ?(room_deps = []) id desc puzzles =
   Cs3110teamproject.Room.make ~id ~description:desc ~puzzles ~room_deps
 
+let mk_unlocked_riddle id q a =
+  let r = mk_riddle id q a in
+  mark_solved r;
+  r
+
+
 (* Helper function to initialize game state *)
 let mk_gamestate rooms start = Cs3110teamproject.Game_state.init ~rooms ~start
-
 
 (* ------------------------------------------------------------- *)
 (* PUZZLE MODULE TESTS                                           *)
@@ -57,9 +40,9 @@ let test_make_riddle_basic _ =
       "map"
   in
   (* Check ID *)
-  assert_equal 42 (Escape_room.Puzzle.puzzle_id p);
+  assert_equal 42 (Cs3110teamproject.Puzzle.puzzle_id p);
   (* New puzzles should be Locked *)
-  assert_equal Escape_room.Puzzle.Locked (Escape_room.Puzzle.status p)
+  assert_equal Cs3110teamproject.Puzzle.Locked (Cs3110teamproject.Puzzle.status p)
 
 (*check answer tests---------------------------------------------*)
 let test_check_answer_riddle _ =
@@ -107,8 +90,8 @@ let test_try_unlock_no_deps _ =
        water, but no fish. What am I?"
       "map"
   in
-  Escape_room.Puzzle.try_unlock [] p;
-  assert_equal Escape_room.Puzzle.Unlocked (Escape_room.Puzzle.status p)
+  Cs3110teamproject.Puzzle.try_unlock [] p;
+  assert_equal Cs3110teamproject.Puzzle.Unlocked (Cs3110teamproject.Puzzle.status p)
 
 let test_try_unlock_with_unsolved_deps _ =
   let _p_dep =
@@ -124,8 +107,8 @@ let test_try_unlock_with_unsolved_deps _ =
       "post office"
   in
   (*The bracket is the passed in list of "global solved puzzles"*)
-  Escape_room.Puzzle.try_unlock [] p;
-  assert_equal Escape_room.Puzzle.Locked (Escape_room.Puzzle.status p)
+  Cs3110teamproject.Puzzle.try_unlock [] p;
+  assert_equal Cs3110teamproject.Puzzle.Locked (Cs3110teamproject.Puzzle.status p)
 
 let test_try_unlock_with_solved_deps _ =
   let p_dep =
@@ -141,8 +124,8 @@ let test_try_unlock_with_solved_deps _ =
       "post office"
   in
   (*The bracket is the passed in list of "global solved puzzles"*)
-  Escape_room.Puzzle.try_unlock [ Escape_room.Puzzle.puzzle_id p_dep ] p;
-  assert_equal Escape_room.Puzzle.Unlocked (Escape_room.Puzzle.status p)
+  Cs3110teamproject.Puzzle.try_unlock [ Cs3110teamproject.Puzzle.puzzle_id p_dep ] p;
+  assert_equal Cs3110teamproject.Puzzle.Unlocked (Cs3110teamproject.Puzzle.status p)
 
 let test_try_unlock_with_multiple_deps _ =
   let p_dep1 =
@@ -159,10 +142,10 @@ let test_try_unlock_with_multiple_deps _ =
       "post office"
   in
   (*The bracket is the passed in list of "global solved puzzles"*)
-  Escape_room.Puzzle.try_unlock
-    [ Escape_room.Puzzle.puzzle_id p_dep1; Escape_room.Puzzle.puzzle_id p_dep2 ]
+  Cs3110teamproject.Puzzle.try_unlock
+    [ Cs3110teamproject.Puzzle.puzzle_id p_dep1; Cs3110teamproject.Puzzle.puzzle_id p_dep2 ]
     p;
-  assert_equal Escape_room.Puzzle.Unlocked (Escape_room.Puzzle.status p)
+  assert_equal Cs3110teamproject.Puzzle.Unlocked (Cs3110teamproject.Puzzle.status p)
 
 let test_try_unlock_already_unlocked _ =
   (* deps = [] means puzzle unlocks immediately *)
@@ -174,12 +157,12 @@ let test_try_unlock_already_unlocked _ =
   in
 
   (* Unlock it through the real API *)
-  Escape_room.Puzzle.try_unlock [] p;
-  assert_equal Escape_room.Puzzle.Unlocked (Escape_room.Puzzle.status p);
+  Cs3110teamproject.Puzzle.try_unlock [] p;
+  assert_equal Cs3110teamproject.Puzzle.Unlocked (Cs3110teamproject.Puzzle.status p);
 
   (* Calling try_unlock again should leave it Unlocked *)
-  Escape_room.Puzzle.try_unlock [] p;
-  assert_equal Escape_room.Puzzle.Unlocked (Escape_room.Puzzle.status p)
+  Cs3110teamproject.Puzzle.try_unlock [] p;
+  assert_equal Cs3110teamproject.Puzzle.Unlocked (Cs3110teamproject.Puzzle.status p)
 
 let test_try_unlock_already_solved _ =
   let p =
@@ -190,16 +173,16 @@ let test_try_unlock_already_solved _ =
   in
 
   (* First, unlock it properly *)
-  Escape_room.Puzzle.try_unlock [] p;
-  assert_equal Escape_room.Puzzle.Unlocked (Escape_room.Puzzle.status p);
+  Cs3110teamproject.Puzzle.try_unlock [] p;
+  assert_equal Cs3110teamproject.Puzzle.Unlocked (Cs3110teamproject.Puzzle.status p);
 
   (* Now mark it solved *)
-  Escape_room.Puzzle.mark_solved p;
-  assert_equal Escape_room.Puzzle.Solved (Escape_room.Puzzle.status p);
+  Cs3110teamproject.Puzzle.mark_solved p;
+  assert_equal Cs3110teamproject.Puzzle.Solved (Cs3110teamproject.Puzzle.status p);
 
   (* Calling try_unlock again should NOT revert or change status *)
-  Escape_room.Puzzle.try_unlock [] p;
-  assert_equal Escape_room.Puzzle.Solved (Escape_room.Puzzle.status p)
+  Cs3110teamproject.Puzzle.try_unlock [] p;
+  assert_equal Cs3110teamproject.Puzzle.Solved (Cs3110teamproject.Puzzle.status p)
 
 (*try unlock tests----------------------------------------------*)
 let test_mark_solved _ =
@@ -211,12 +194,12 @@ let test_mark_solved _ =
       "map"
   in
 
-  Escape_room.Puzzle.try_unlock [] p;
-  assert_equal Escape_room.Puzzle.Unlocked (Escape_room.Puzzle.status p);
+  Cs3110teamproject.Puzzle.try_unlock [] p;
+  assert_equal Cs3110teamproject.Puzzle.Unlocked (Cs3110teamproject.Puzzle.status p);
 
   (* Now mark solved *)
-  Escape_room.Puzzle.mark_solved p;
-  assert_equal Escape_room.Puzzle.Solved (Escape_room.Puzzle.status p)
+  Cs3110teamproject.Puzzle.mark_solved p;
+  assert_equal Cs3110teamproject.Puzzle.Solved (Cs3110teamproject.Puzzle.status p)
 
 (* ------------------------------------------------------------- *)
 (* ROOM MODULE TEST                                              *)
@@ -232,14 +215,14 @@ let test_make_room_basic _ =
   let p2 = mk_math 2 "What is 2 + 2?" 4 in
   let room = mk_room 1 "Puzzle Room" [ p1; p2 ] in
   (* Check ID *)
-  assert_equal 1 (Escape_room.Room.room_id room);
+  assert_equal 1 (Cs3110teamproject.Room.room_id room);
   (* New rooms should be Inaccessible *)
-  assert_equal Escape_room.Room.Inaccessible (Escape_room.Room.status room)
+  assert_equal Cs3110teamproject.Room.Inaccessible (Cs3110teamproject.Room.status room)
 
 (*room_fulfilled tests-------------------------------------------*)
 let room_fulfilled_no_puzzles _ =
   let room = mk_room 1 "Empty Room" [] in
-  assert_equal true (Escape_room.Room.room_fulfilled room)
+  assert_equal true (Cs3110teamproject.Room.room_fulfilled room)
 
 let room_fulfilled_not_fulfilled _ =
   let p1 =
@@ -251,7 +234,7 @@ let room_fulfilled_not_fulfilled _ =
   let p2 = mk_math 2 "What is 2 + 2?" 4 in
   let room = mk_room 2 "Puzzle Room" [ p1; p2 ] in
   (* Neither puzzle is solved yet *)
-  assert_equal false (Escape_room.Room.room_fulfilled room)
+  assert_equal false (Cs3110teamproject.Room.room_fulfilled room)
 
 let room_fullfilled_is_fulfilled _ =
   let p1 =
@@ -263,17 +246,17 @@ let room_fullfilled_is_fulfilled _ =
   let p2 = mk_math 2 "What is 2 + 2?" 4 in
   let room = mk_room 3 "Puzzle Room" [ p1; p2 ] in
   (* Unlock and solve both puzzles *)
-  Escape_room.Puzzle.try_unlock [] p1;
-  Escape_room.Puzzle.mark_solved p1;
-  Escape_room.Puzzle.try_unlock [] p2;
-  Escape_room.Puzzle.mark_solved p2;
-  assert_equal true (Escape_room.Room.room_fulfilled room)
+  Cs3110teamproject.Puzzle.try_unlock [] p1;
+  Cs3110teamproject.Puzzle.mark_solved p1;
+  Cs3110teamproject.Puzzle.try_unlock [] p2;
+  Cs3110teamproject.Puzzle.mark_solved p2;
+  assert_equal true (Cs3110teamproject.Room.room_fulfilled room)
 
 (*try_unlock tests-----------------------------------------------*)
 let test_try_unlock_room_no_deps _ =
   let room = mk_room 1 "No Deps Room" [] in
-  Escape_room.Room.try_unlock room ~solved_puzzles:[];
-  assert_equal Escape_room.Room.Accessible (Escape_room.Room.status room)
+  Cs3110teamproject.Room.try_unlock room ~solved_puzzles:[];
+  assert_equal Cs3110teamproject.Room.Accessible (Cs3110teamproject.Room.status room)
 
 let test_try_unlock_accessible_room _ =
   let p1 =
@@ -284,11 +267,11 @@ let test_try_unlock_accessible_room _ =
   in
   let p2 = mk_math 2 "What is 2 + 2?" 4 in
   let room = mk_room 1 "Already Accessible Room" [ p1; p2 ] in
-  Escape_room.Puzzle.try_unlock [] p1;
-  Escape_room.Puzzle.mark_solved p1;
-  room.status <- Escape_room.Room.Accessible;
-  Escape_room.Room.try_unlock room ~solved_puzzles:[];
-  assert_equal Escape_room.Room.Accessible (Escape_room.Room.status room)
+  Cs3110teamproject.Puzzle.try_unlock [] p1;
+  Cs3110teamproject.Puzzle.mark_solved p1;
+  room.status <- Cs3110teamproject.Room.Accessible;
+  Cs3110teamproject.Room.try_unlock room ~solved_puzzles:[];
+  assert_equal Cs3110teamproject.Room.Accessible (Cs3110teamproject.Room.status room)
 
 let test_try_unlock_inaccessible_deps_solved _ =
   let p1 =
@@ -299,12 +282,12 @@ let test_try_unlock_inaccessible_deps_solved _ =
   in
   let p2 = mk_math 2 "What is 2 + 2?" 4 in
   let room = mk_room ~room_deps:[ 1; 2 ] 2 "Dependent Room" [ p1; p2 ] in
-  Escape_room.Puzzle.try_unlock [] p1;
-  Escape_room.Puzzle.mark_solved p1;
-  Escape_room.Puzzle.try_unlock [] p2;
-  Escape_room.Puzzle.mark_solved p2;
-  Escape_room.Room.try_unlock room ~solved_puzzles:[ 1; 2 ];
-  assert_equal Escape_room.Room.Accessible (Escape_room.Room.status room)
+  Cs3110teamproject.Puzzle.try_unlock [] p1;
+  Cs3110teamproject.Puzzle.mark_solved p1;
+  Cs3110teamproject.Puzzle.try_unlock [] p2;
+  Cs3110teamproject.Puzzle.mark_solved p2;
+  Cs3110teamproject.Room.try_unlock room ~solved_puzzles:[ 1; 2 ];
+  assert_equal Cs3110teamproject.Room.Accessible (Cs3110teamproject.Room.status room)
 
 let test_try_unlock_inaccessible_deps_unsolved _ =
   let p1 =
@@ -315,21 +298,21 @@ let test_try_unlock_inaccessible_deps_unsolved _ =
   in
   let p2 = mk_math 2 "What is 2 + 2?" 4 in
   let room = mk_room ~room_deps:[ 1; 2 ] 2 "Dependent Room" [ p1; p2 ] in
-  Escape_room.Puzzle.try_unlock [] p1;
-  Escape_room.Puzzle.mark_solved p1;
+  Cs3110teamproject.Puzzle.try_unlock [] p1;
+  Cs3110teamproject.Puzzle.mark_solved p1;
   (* p2 remains unsolved *)
-  Escape_room.Room.try_unlock room ~solved_puzzles:[ 1 ];
-  assert_equal Escape_room.Room.Inaccessible (Escape_room.Room.status room)
+  Cs3110teamproject.Room.try_unlock room ~solved_puzzles:[ 1 ];
+  assert_equal Cs3110teamproject.Room.Inaccessible (Cs3110teamproject.Room.status room)
 
 (*is_accessible tests--------------------------------------------*)
 let test_is_accessible_false _ =
   let room = mk_room 1 "Inaccessible Room" [] in
-  assert_equal false (Escape_room.Room.is_accessible room)
+  assert_equal false (Cs3110teamproject.Room.is_accessible room)
 
 let test_is_accessible_true _ =
   let room = mk_room 1 "Accessible Room" [] in
-  room.status <- Escape_room.Room.Accessible;
-  assert_equal true (Escape_room.Room.is_accessible room)
+  room.status <- Cs3110teamproject.Room.Accessible;
+  assert_equal true (Cs3110teamproject.Room.is_accessible room)
 
 (*attempt_enter tests--------------------------------------------*)
 let test_attempt_enter_inaccessible_deps_unsolved _ =
@@ -341,15 +324,15 @@ let test_attempt_enter_inaccessible_deps_unsolved _ =
   in
   let p2 = mk_math 2 "What is 2 + 2?" 4 in
   let room = mk_room ~room_deps:[ 1; 2 ] 2 "Dependent Room" [ p1; p2 ] in
-  Escape_room.Puzzle.try_unlock [] p1;
-  Escape_room.Puzzle.mark_solved p1;
+  Cs3110teamproject.Puzzle.try_unlock [] p1;
+  Cs3110teamproject.Puzzle.mark_solved p1;
   (* p2 remains unsolved *)
   let can_enter =
-    Escape_room.Room.attempt_enter room
-      ~solved_puzzles:[ Escape_room.Puzzle.puzzle_id p1 ]
+    Cs3110teamproject.Room.attempt_enter room
+      ~solved_puzzles:[ Cs3110teamproject.Puzzle.puzzle_id p1 ]
   in
   assert_equal false can_enter;
-  assert_equal Escape_room.Room.Inaccessible (Escape_room.Room.status room)
+  assert_equal Cs3110teamproject.Room.Inaccessible (Cs3110teamproject.Room.status room)
 
 let test_attempt_enter_inaccessible_deps_solved _ =
   let p1 =
@@ -360,17 +343,17 @@ let test_attempt_enter_inaccessible_deps_solved _ =
   in
   let p2 = mk_math 2 "What is 2 + 2?" 4 in
   let room = mk_room ~room_deps:[ 1; 2 ] 2 "Dependent Room" [ p1; p2 ] in
-  Escape_room.Puzzle.try_unlock [] p1;
-  Escape_room.Puzzle.mark_solved p1;
-  Escape_room.Puzzle.try_unlock [] p2;
-  Escape_room.Puzzle.mark_solved p2;
+  Cs3110teamproject.Puzzle.try_unlock [] p1;
+  Cs3110teamproject.Puzzle.mark_solved p1;
+  Cs3110teamproject.Puzzle.try_unlock [] p2;
+  Cs3110teamproject.Puzzle.mark_solved p2;
   let can_enter =
-    Escape_room.Room.attempt_enter room
+    Cs3110teamproject.Room.attempt_enter room
       ~solved_puzzles:
-        [ Escape_room.Puzzle.puzzle_id p1; Escape_room.Puzzle.puzzle_id p2 ]
+        [ Cs3110teamproject.Puzzle.puzzle_id p1; Cs3110teamproject.Puzzle.puzzle_id p2 ]
   in
   assert_equal true can_enter;
-  assert_equal Escape_room.Room.Accessible (Escape_room.Room.status room)
+  assert_equal Cs3110teamproject.Room.Accessible (Cs3110teamproject.Room.status room)
 
 let test_attempt_enter_accessible _ =
   let p1 =
@@ -381,13 +364,12 @@ let test_attempt_enter_accessible _ =
   in
   let p2 = mk_math 2 "What is 2 + 2?" 4 in
   let room = mk_room 1 "Already Accessible Room" [ p1; p2 ] in
-  Escape_room.Puzzle.try_unlock [] p1;
-  Escape_room.Puzzle.mark_solved p1;
-  room.status <- Escape_room.Room.Accessible;
-  let can_enter = Escape_room.Room.attempt_enter room ~solved_puzzles:[] in
+  Cs3110teamproject.Puzzle.try_unlock [] p1;
+  Cs3110teamproject.Puzzle.mark_solved p1;
+  room.status <- Cs3110teamproject.Room.Accessible;
+  let can_enter = Cs3110teamproject.Room.attempt_enter room ~solved_puzzles:[] in
   assert_equal true can_enter;
-  assert_equal Escape_room.Room.Accessible (Escape_room.Room.status room)
-
+  assert_equal Cs3110teamproject.Room.Accessible (Cs3110teamproject.Room.status room)
 
 (* ------------------------------------------------------------- *)
 (* HINT MODULE TESTS                                             *)
@@ -564,7 +546,6 @@ let test_is_finished_false_when_unfinished _ =
   assert_bool "Game should NOT be finished"
     (not (Cs3110teamproject.Game_state.is_finished gs))
 
-
 (* ------------------------------------------------------------- *)
 (* TEST SUITE                                                    *)
 (* ------------------------------------------------------------- *)
@@ -601,7 +582,7 @@ let tests =
          "attempt enter inaccessible deps solved"
          >:: test_attempt_enter_inaccessible_deps_solved;
          "attempt enter accessible" >:: test_attempt_enter_accessible;
-                  "Basic register and get hint" >:: test_register_and_get_hint;
+         "Basic register and get hint" >:: test_register_and_get_hint;
          "An invalid hint should return none" >:: test_get_invalid_hint;
          "Changes a hint in the table" >:: test_change_hint;
          "Two hints" >:: test_two_hints;
@@ -626,7 +607,6 @@ let tests =
          >:: test_is_finished_true_when_all_solved;
          "Returns false when there are some unsolved puzzles"
          >:: test_is_finished_false_when_unfinished;
-        ]
-
+       ]
 
 let _ = run_test_tt_main tests
