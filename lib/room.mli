@@ -21,6 +21,8 @@ val make :
   room_deps:int list ->
   room
 (** Create a new room *)
-
+val room_fulfilled : room -> bool
 val try_unlock : room -> solved_puzzles:int list -> unit
 (** Unlock room if dependencies are solved *)
+val is_accessible : room -> bool
+val attempt_enter : room -> solved_puzzles:int list -> bool
