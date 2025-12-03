@@ -22,7 +22,12 @@ let mk_room ?(room_deps = []) id desc puzzles =
 
 (*puzzle creation tests------------------------------------------*)
 let test_make_riddle_basic _ =
-  let p = mk_riddle 42 "What has keys?" "piano" in
+  let p =
+    mk_riddle 42
+      " I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
   (* Check ID *)
   assert_equal 42 (Escape_room.Puzzle.puzzle_id p);
   (* New puzzles should be Locked *)
@@ -30,13 +35,18 @@ let test_make_riddle_basic _ =
 
 (*check answer tests---------------------------------------------*)
 let test_check_answer_riddle _ =
-  let p = mk_riddle 1 "What has keys but can't open locks?" "piano" in
-  assert_equal true (check_answer p "piano");
-  assert_equal true (check_answer p "PIANO");
+  let p =
+    mk_riddle 1
+      " I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+  assert_equal true (check_answer p "map");
+  assert_equal true (check_answer p "MAP");
   (*Testing caps*)
-  assert_equal true (check_answer p "  piano  ");
+  assert_equal true (check_answer p "  map  ");
   (*Testing whitespace*)
-  assert_equal false (check_answer p "keyboard")
+  assert_equal false (check_answer p "donut")
 
 let test_check_answer_math _ =
   let p = mk_math 2 "What is 2 + 2?" 4 in
@@ -63,28 +73,63 @@ let test_check_answer_trivia _ =
 
 (*try unlock tests----------------------------------------------*)
 let test_try_unlock_no_deps _ =
-  let p = mk_riddle 1 "What has keys but can't open locks?" "piano" in
+  let p =
+    mk_riddle 1
+      " I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
   Escape_room.Puzzle.try_unlock [] p;
   assert_equal Escape_room.Puzzle.Unlocked (Escape_room.Puzzle.status p)
 
 let test_try_unlock_with_unsolved_deps _ =
-  let _p_dep = mk_riddle 1 "What has keys but can't open locks?" "piano" in
-  let p = mk_riddle ~deps:[ 1 ] 2 "What has hands but can't clap?" "clock" in
+  let _p_dep =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+  let p =
+    mk_riddle ~deps:[ 1 ] 2
+      "What begins with the letter 'P,' ends with 'E,' and has thousands of \
+       letters inside?"
+      "post office"
+  in
   (*The bracket is the passed in list of "global solved puzzles"*)
   Escape_room.Puzzle.try_unlock [] p;
   assert_equal Escape_room.Puzzle.Locked (Escape_room.Puzzle.status p)
 
 let test_try_unlock_with_solved_deps _ =
-  let p_dep = mk_riddle 1 "What has keys but can't open locks?" "piano" in
-  let p = mk_riddle ~deps:[ 1 ] 2 "What has hands but can't clap?" "clock" in
+  let p_dep =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+  let p =
+    mk_riddle ~deps:[ 1 ] 2
+      "What begins with the letter 'P,' ends with 'E,' and has thousands of \
+       letters inside?"
+      "post office"
+  in
   (*The bracket is the passed in list of "global solved puzzles"*)
   Escape_room.Puzzle.try_unlock [ Escape_room.Puzzle.puzzle_id p_dep ] p;
   assert_equal Escape_room.Puzzle.Unlocked (Escape_room.Puzzle.status p)
 
 let test_try_unlock_with_multiple_deps _ =
-  let p_dep1 = mk_riddle 1 "What has keys but can't open locks?" "piano" in
+  let p_dep1 =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
   let p_dep2 = mk_math 2 "What is 2 + 2?" 4 in
-  let p = mk_riddle ~deps:[ 1; 2 ] 3 "What has hands but can't clap?" "clock" in
+  let p =
+    mk_riddle ~deps:[ 1; 2 ] 3
+      "What begins with the letter 'P,' ends with 'E,' and has thousands of \
+       letters inside?"
+      "post office"
+  in
   (*The bracket is the passed in list of "global solved puzzles"*)
   Escape_room.Puzzle.try_unlock
     [ Escape_room.Puzzle.puzzle_id p_dep1; Escape_room.Puzzle.puzzle_id p_dep2 ]
@@ -93,7 +138,12 @@ let test_try_unlock_with_multiple_deps _ =
 
 let test_try_unlock_already_unlocked _ =
   (* deps = [] means puzzle unlocks immediately *)
-  let p = mk_riddle 1 "What has keys but can't open locks?" "piano" in
+  let p =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
 
   (* Unlock it through the real API *)
   Escape_room.Puzzle.try_unlock [] p;
@@ -104,7 +154,12 @@ let test_try_unlock_already_unlocked _ =
   assert_equal Escape_room.Puzzle.Unlocked (Escape_room.Puzzle.status p)
 
 let test_try_unlock_already_solved _ =
-  let p = mk_riddle 1 "What has keys but can't open locks?" "piano" in
+  let p =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
 
   (* First, unlock it properly *)
   Escape_room.Puzzle.try_unlock [] p;
@@ -121,7 +176,12 @@ let test_try_unlock_already_solved _ =
 (*try unlock tests----------------------------------------------*)
 let test_mark_solved _ =
   (* deps=[] so this unlocks immediately *)
-  let p = mk_riddle 1 "What has keys but can't open locks?" "piano" in
+  let p =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
 
   Escape_room.Puzzle.try_unlock [] p;
   assert_equal Escape_room.Puzzle.Unlocked (Escape_room.Puzzle.status p);
@@ -134,6 +194,19 @@ let test_mark_solved _ =
 (* ROOM MODULE TEST                                              *)
 (* ------------------------------------------------------------- *)
 (*Room Creation Tests--------------------------------------------*)
+let test_make_room_basic _ =
+  let p1 =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+  let p2 = mk_math 2 "What is 2 + 2?" 4 in
+  let room = mk_room 1 "Puzzle Room" [ p1; p2 ] in
+  (* Check ID *)
+  assert_equal 1 (Escape_room.Room.room_id room);
+  (* New rooms should be Inaccessible *)
+  assert_equal Escape_room.Room.Inaccessible (Escape_room.Room.status room)
 
 (*room_fulfilled tests-------------------------------------------*)
 let room_fulfilled_no_puzzles _ =
@@ -141,14 +214,24 @@ let room_fulfilled_no_puzzles _ =
   assert_equal true (Escape_room.Room.room_fulfilled room)
 
 let room_fulfilled_not_fulfilled _ =
-  let p1 = mk_riddle 1 "What has keys but can't open locks?" "piano" in
+  let p1 =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
   let p2 = mk_math 2 "What is 2 + 2?" 4 in
   let room = mk_room 2 "Puzzle Room" [ p1; p2 ] in
   (* Neither puzzle is solved yet *)
   assert_equal false (Escape_room.Room.room_fulfilled room)
 
 let room_fullfilled_is_fulfilled _ =
-  let p1 = mk_riddle 1 "What has keys but can't open locks?" "piano" in
+  let p1 =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
   let p2 = mk_math 2 "What is 2 + 2?" 4 in
   let room = mk_room 3 "Puzzle Room" [ p1; p2 ] in
   (* Unlock and solve both puzzles *)
@@ -165,7 +248,12 @@ let test_try_unlock_room_no_deps _ =
   assert_equal Escape_room.Room.Accessible (Escape_room.Room.status room)
 
 let test_try_unlock_accessible_room _ =
-  let p1 = mk_riddle 1 "What has keys but can't open locks?" "piano" in
+  let p1 =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
   let p2 = mk_math 2 "What is 2 + 2?" 4 in
   let room = mk_room 1 "Already Accessible Room" [ p1; p2 ] in
   Escape_room.Puzzle.try_unlock [] p1;
@@ -175,7 +263,12 @@ let test_try_unlock_accessible_room _ =
   assert_equal Escape_room.Room.Accessible (Escape_room.Room.status room)
 
 let test_try_unlock_inaccessible_deps_solved _ =
-  let p1 = mk_riddle 1 "What has keys but can't open locks?" "piano" in
+  let p1 =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
   let p2 = mk_math 2 "What is 2 + 2?" 4 in
   let room = mk_room ~room_deps:[ 1; 2 ] 2 "Dependent Room" [ p1; p2 ] in
   Escape_room.Puzzle.try_unlock [] p1;
@@ -186,7 +279,12 @@ let test_try_unlock_inaccessible_deps_solved _ =
   assert_equal Escape_room.Room.Accessible (Escape_room.Room.status room)
 
 let test_try_unlock_inaccessible_deps_unsolved _ =
-  let p1 = mk_riddle 1 "What has keys but can't open locks?" "piano" in
+  let p1 =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
   let p2 = mk_math 2 "What is 2 + 2?" 4 in
   let room = mk_room ~room_deps:[ 1; 2 ] 2 "Dependent Room" [ p1; p2 ] in
   Escape_room.Puzzle.try_unlock [] p1;
@@ -207,29 +305,58 @@ let test_is_accessible_true _ =
 
 (*attempt_enter tests--------------------------------------------*)
 let test_attempt_enter_inaccessible_deps_unsolved _ =
-  let p1 = mk_riddle 1 "What has keys but can't open locks?" "piano" in
+  let p1 =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
   let p2 = mk_math 2 "What is 2 + 2?" 4 in
   let room = mk_room ~room_deps:[ 1; 2 ] 2 "Dependent Room" [ p1; p2 ] in
   Escape_room.Puzzle.try_unlock [] p1;
   Escape_room.Puzzle.mark_solved p1;
   (* p2 remains unsolved *)
   let can_enter =
-    Escape_room.Room.attempt_enter room ~solved_puzzles:[ Escape_room.Puzzle.puzzle_id p1 ]
+    Escape_room.Room.attempt_enter room
+      ~solved_puzzles:[ Escape_room.Puzzle.puzzle_id p1 ]
   in
   assert_equal false can_enter;
   assert_equal Escape_room.Room.Inaccessible (Escape_room.Room.status room)
 
 let test_attempt_enter_inaccessible_deps_solved _ =
-  let p1 = mk_riddle 1 "What has keys but can't open locks?" "piano" in
+  let p1 =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
   let p2 = mk_math 2 "What is 2 + 2?" 4 in
   let room = mk_room ~room_deps:[ 1; 2 ] 2 "Dependent Room" [ p1; p2 ] in
   Escape_room.Puzzle.try_unlock [] p1;
   Escape_room.Puzzle.mark_solved p1;
-  Escape_room.Puzzle.try_unlock [] p2; 
+  Escape_room.Puzzle.try_unlock [] p2;
   Escape_room.Puzzle.mark_solved p2;
   let can_enter =
-    Escape_room.Room.attempt_enter room ~solved_puzzles:[ Escape_room.Puzzle.puzzle_id p1; Escape_room.Puzzle.puzzle_id p2 ]
+    Escape_room.Room.attempt_enter room
+      ~solved_puzzles:
+        [ Escape_room.Puzzle.puzzle_id p1; Escape_room.Puzzle.puzzle_id p2 ]
   in
+  assert_equal true can_enter;
+  assert_equal Escape_room.Room.Accessible (Escape_room.Room.status room)
+
+let test_attempt_enter_accessible _ =
+  let p1 =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+  let p2 = mk_math 2 "What is 2 + 2?" 4 in
+  let room = mk_room 1 "Already Accessible Room" [ p1; p2 ] in
+  Escape_room.Puzzle.try_unlock [] p1;
+  Escape_room.Puzzle.mark_solved p1;
+  room.status <- Escape_room.Room.Accessible;
+  let can_enter = Escape_room.Room.attempt_enter room ~solved_puzzles:[] in
   assert_equal true can_enter;
   assert_equal Escape_room.Room.Accessible (Escape_room.Room.status room)
 
@@ -258,13 +385,17 @@ let tests =
          "room fulfilled is fulfilled" >:: room_fullfilled_is_fulfilled;
          "try unlock room no deps" >:: test_try_unlock_room_no_deps;
          "try unlock accessible room" >:: test_try_unlock_accessible_room;
-          "try unlock inaccessible deps solved" >:: test_try_unlock_inaccessible_deps_solved;
-          "try unlock inaccessible deps unsolved" >:: test_try_unlock_inaccessible_deps_unsolved;
-          "is accessible false" >:: test_is_accessible_false;
-          "is accessible true" >:: test_is_accessible_true;
-          "attempt enter inaccessible deps unsolved" >:: test_attempt_enter_inaccessible_deps_unsolved;
-          "attempt enter inaccessible deps solved" >:: test_attempt_enter_inaccessible_deps_solved;
-
+         "try unlock inaccessible deps solved"
+         >:: test_try_unlock_inaccessible_deps_solved;
+         "try unlock inaccessible deps unsolved"
+         >:: test_try_unlock_inaccessible_deps_unsolved;
+         "is accessible false" >:: test_is_accessible_false;
+         "is accessible true" >:: test_is_accessible_true;
+         "attempt enter inaccessible deps unsolved"
+         >:: test_attempt_enter_inaccessible_deps_unsolved;
+         "attempt enter inaccessible deps solved"
+         >:: test_attempt_enter_inaccessible_deps_solved;
+         "attempt enter accessible" >:: test_attempt_enter_accessible;
        ]
 
 let _ = run_test_tt_main tests
