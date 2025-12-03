@@ -20,6 +20,7 @@ type game_state =
   | StartingRoom
   | CorridorRoom
   | StairwayRoom
+  | PotteryRoom
 
 (*actual pop up for when the user toggles an image that has a hint*)
 let puzzle_popup message on_submit parent_layout () =
@@ -148,6 +149,14 @@ let () =
   let stairway_bg_layout = L.resident ~w:bg_w ~h:bg_h stairway_bg in
   let screen5 = L.superpose ~w:bg_w ~h:bg_h [ stairway_bg_layout ] in
 
+  (* pottery room *)
+  let pottery_bg =
+    W.image ~w:bg_w ~h:bg_h ~noscale:true "images/potteryroom.png"
+  in
+  let potteryroom_bg_layout = L.resident ~w:bg_w ~h:bg_h pottery_bg in
+  let screen6 = L.superpose ~w:bg_w ~h:bg_h [ potteryroom_bg_layout ] in
+
+  (* room navigation arrow *)
   let navigation_arrow ~x ~y ~image ~target_room ~target_screen ~main_layout ()
       =
     let arrow = W.image ~noscale:true image in
@@ -203,6 +212,8 @@ let () =
         else { is_correct = false; message = "Wrong answer: " ^ answer })
       screen3 ()
   in
+
+  (* Corridor Room *)
   let lock_room, lock_state =
     toggle_image ~x:640 ~y:370 ~w:30 ~h:45
       ~closed_image:"images/lock_closed.png" ~open_image:"images/lock_open.png"
@@ -295,6 +306,7 @@ let () =
       screen4 ()
   in
 
+  (* Stairway room *)
   let doorknob_room, doorknob_state =
     toggle_image_with_bg_change ~x:910 ~y:280 ~w:40 ~h:80
       ~closed_image:"images/doorknob.png" ~open_image:"images/transparent.png"
@@ -356,6 +368,92 @@ let () =
       screen5 ()
   in
 
+  (* Pottery room *)
+  let scroll_room, scroll_state =
+    toggle_image ~x:610 ~y:380 ~w:167 ~h:167
+      ~closed_image:"images/scroll_closed.png"
+      ~open_image:"images/scroll_open.png"
+      ~puzzle_message:
+        "To find the puzzle which you seek, look at lists; they're not so weak.\n\
+         One piece in front, a trail behind,\n\
+         with brackets keeping all aligned.\n\
+         Split in two, I never fail:\n\
+         my front is head, my back is ____."
+      ~on_answer:(fun answer ->
+        if
+          String.lowercase_ascii answer = "tail"
+          || String.lowercase_ascii answer = "a tail"
+        then
+          {
+            is_correct = true;
+            message =
+              "The head comes first, but the tails prevail! Now seek three \
+               pots to lead the trail. ";
+          }
+        else { is_correct = false; message = "Wrong answer: " ^ answer })
+      screen6 ()
+  in
+
+  let pot1_room, pot1_state =
+    toggle_image ~x:500 ~y:160 ~w:100 ~h:130 ~closed_image:"images/pot1.png"
+      ~open_image:"images/pot1.png"
+      ~puzzle_message:
+        "What is the symbol for appending to a list in OCaml? (Type the actual \
+         symbol)"
+      ~on_answer:(fun answer ->
+        if String.lowercase_ascii answer = "@" then
+          {
+            is_correct = true;
+            message =
+              "This is #1. Be sure to remember! Explore the next two pots. ";
+          }
+        else { is_correct = false; message = "Wrong answer: " ^ answer })
+      screen6 ()
+  in
+
+  let pot2_room, pot2_state =
+    toggle_image ~x:600 ~y:160 ~w:100 ~h:120 ~closed_image:"images/pot2.png"
+      ~open_image:"images/pot2.png"
+      ~puzzle_message:
+        "I know no one uses this anymore... but what's the pound key? (The \
+         actual symbol)"
+      ~on_answer:(fun answer ->
+        if String.lowercase_ascii answer = "#" then
+          { is_correct = true; message = "This is #2. Again, don't forget... " }
+        else { is_correct = false; message = "Wrong answer: " ^ answer })
+      screen6 ()
+  in
+
+  let pot3_room, pot3_state =
+    toggle_image ~x:700 ~y:160 ~w:100 ~h:120 ~closed_image:"images/pot3.png"
+      ~open_image:"images/pot3.png"
+      ~puzzle_message:"What is the symbol for the modulo operator?"
+      ~on_answer:(fun answer ->
+        if String.lowercase_ascii answer = "%" then
+          {
+            is_correct = true;
+            message =
+              "This is #3. Perhaps these symbols would be useful in opening a \
+               lock somewhere.";
+          }
+        else { is_correct = false; message = "Wrong answer: " ^ answer })
+      screen6 ()
+  in
+
+  let lockedpot_room, lockedpot_state =
+    toggle_image ~x:1000 ~y:340 ~w:140 ~h:120
+      ~closed_image:"images/lockedpot.png" ~open_image:"images/unlockedpot.png"
+      ~puzzle_message:"Enter the three symbol code to unchain this pot."
+      ~on_answer:(fun answer ->
+        if String.lowercase_ascii answer = "@#%" then
+          {
+            is_correct = true;
+            message = "This gave you a key to the next room. Nice. So long.";
+          }
+        else { is_correct = false; message = "Wrong answer: " ^ answer })
+      screen6 ()
+  in
+
   let main_layout = L.superpose ~w:bg_w ~h:bg_h [ screen1 ] in
   L.auto_scale main_layout;
   L.disable_resize main_layout;
@@ -368,6 +466,11 @@ let () =
   let arrow_to_stairway =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
       ~target_room:StairwayRoom ~target_screen:screen5 ~main_layout ()
+  in
+
+  let arrow_to_pottery =
+    navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
+      ~target_room:PotteryRoom ~target_screen:screen6 ~main_layout ()
   in
 
   L.set_rooms screen3
@@ -383,7 +486,22 @@ let () =
       arrow_to_stairway;
     ];
   L.set_rooms screen5
-    [ stairway_bg_layout; doorknob_room; spider_room; torch_room ];
+    [
+      stairway_bg_layout;
+      doorknob_room;
+      spider_room;
+      torch_room;
+      arrow_to_pottery;
+    ];
+  L.set_rooms screen6
+    [
+      potteryroom_bg_layout;
+      scroll_room;
+      pot1_room;
+      pot2_room;
+      pot3_room;
+      lockedpot_room;
+    ];
 
   let transition_to_intro2 _ _ _ =
     current_state := Intro2;
