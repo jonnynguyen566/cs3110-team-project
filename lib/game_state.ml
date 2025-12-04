@@ -6,7 +6,7 @@ type t = {
   mutable current_room : Room.room;
   rooms : Room.room list;
   mutable solved : int list;
-  start_time : float;
+  mutable start_time : float option;
   mutable end_time : float option;
 }
 
@@ -20,9 +20,13 @@ let init ~rooms ~start =
     current_room = start_room;
     rooms;
     solved = [];
-    start_time = Unix.time ();
+    start_time = None;  (* Timer not started yet *)
     end_time = None;
   }
+
+let start_timer gs =
+  if gs.start_time = None then
+    gs.start_time <- Some (Unix.time ())
 
 let all_rooms gs = gs.rooms
 
@@ -62,9 +66,12 @@ let solve_puzzle gs ~puzzle_id =
     gs.end_time <- Some (Unix.time ())
 
 let elapsed_time gs =
-  match gs.end_time with
-  | Some t_end -> t_end -. gs.start_time
-  | None -> Unix.time () -. gs.start_time
+  match gs.start_time with
+  | None -> 0.0  
+  | Some t_start -> (
+      match gs.end_time with
+      | Some t_end -> t_end -. t_start
+      | None -> Unix.time () -. t_start)
 
 let format_time seconds =
   let s = int_of_float seconds in
