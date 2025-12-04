@@ -5,19 +5,25 @@ open Cs3110teamproject.Room
 open Cs3110teamproject.Game_state
 
 (*Helper Functions for creating puzzles to test with*)
-let mk_riddle ?(deps = []) id q a =
-  Cs3110teamproject.Puzzle.make ~id ~puzzle_type:(Riddle (q, a)) ~deps
+let mk_riddle ?(deps = []) ?(success_msg = "Solved!") id q a =
+  Cs3110teamproject.Puzzle.make ~id
+    ~puzzle_type:(Riddle (q, a))
+    ~deps ~success_msg
 
 let mk_unlocked_riddle id q a =
   let r = mk_riddle id q a in
   mark_solved r;
   r
 
-let mk_trivia ?(deps = []) id q a =
-  Cs3110teamproject.Puzzle.make ~id ~puzzle_type:(Trivia (q, a)) ~deps
+let mk_trivia ?(deps = []) ?(success_msg = "Solved!") id q a =
+  Cs3110teamproject.Puzzle.make ~id
+    ~puzzle_type:(Trivia (q, a))
+    ~deps ~success_msg
 
-let mk_math ?(deps = []) id q n =
-  Cs3110teamproject.Puzzle.make ~id ~puzzle_type:(Math (q, n)) ~deps
+let mk_math ?(deps = []) ?(success_msg = "Solved!") id q n =
+  Cs3110teamproject.Puzzle.make ~id
+    ~puzzle_type:(Math (q, n))
+    ~deps ~success_msg
 
 (*Helper Functions for creating rooms to test with*)
 let mk_room ?(room_deps = []) id desc puzzles =
