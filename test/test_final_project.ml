@@ -5,19 +5,25 @@ open Cs3110teamproject.Room
 open Cs3110teamproject.Game_state
 
 (*Helper Functions for creating puzzles to test with*)
-let mk_riddle ?(deps = []) id q a =
-  Cs3110teamproject.Puzzle.make ~id ~puzzle_type:(Riddle (q, a)) ~deps
+let mk_riddle ?(deps = []) ?(success_msg = "Solved!") id q a =
+  Cs3110teamproject.Puzzle.make ~id
+    ~puzzle_type:(Riddle (q, a))
+    ~deps ~success_msg
 
 let mk_unlocked_riddle id q a =
   let r = mk_riddle id q a in
   mark_solved r;
   r
 
-let mk_trivia ?(deps = []) id q a =
-  Cs3110teamproject.Puzzle.make ~id ~puzzle_type:(Trivia (q, a)) ~deps
+let mk_trivia ?(deps = []) ?(success_msg = "Solved!") id q a =
+  Cs3110teamproject.Puzzle.make ~id
+    ~puzzle_type:(Trivia (q, a))
+    ~deps ~success_msg
 
-let mk_math ?(deps = []) id q n =
-  Cs3110teamproject.Puzzle.make ~id ~puzzle_type:(Math (q, n)) ~deps
+let mk_math ?(deps = []) ?(success_msg = "Solved!") id q n =
+  Cs3110teamproject.Puzzle.make ~id
+    ~puzzle_type:(Math (q, n))
+    ~deps ~success_msg
 
 (*Helper Functions for creating rooms to test with*)
 let mk_room ?(room_deps = []) id desc puzzles =
@@ -25,6 +31,380 @@ let mk_room ?(room_deps = []) id desc puzzles =
 
 (* Helper function to initialize game state *)
 let mk_gamestate rooms start = Cs3110teamproject.Game_state.init ~rooms ~start
+
+(* ------------------------------------------------------------- *)
+(* PUZZLE MODULE TESTS                                           *)
+(* ------------------------------------------------------------- *)
+
+(*puzzle creation tests------------------------------------------*)
+let test_make_riddle_basic _ =
+  let p =
+    mk_riddle 42
+      " I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+  (* Check ID *)
+  assert_equal 42 (Cs3110teamproject.Puzzle.puzzle_id p);
+  (* New puzzles should be Locked *)
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status p)
+
+(*check answer tests---------------------------------------------*)
+let test_check_answer_riddle _ =
+  let p =
+    mk_riddle 1
+      " I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+  assert_equal true (check_answer p "map");
+  assert_equal true (check_answer p "MAP");
+  (*Testing caps*)
+  assert_equal true (check_answer p "  map  ");
+  (*Testing whitespace*)
+  assert_equal false (check_answer p "donut")
+
+let test_check_answer_math _ =
+  let p = mk_math 2 "What is 2 + 2?" 4 in
+  assert_equal true (check_answer p "4");
+  assert_equal true (check_answer p " 4 ");
+  (*Test whitespace*)
+  assert_equal true (check_answer p "four");
+  (*Test string form*)
+  assert_equal true (check_answer p " four");
+  (*Test string with whitespace*)
+  assert_equal true (check_answer p "Four");
+  (*Test word form with caps*)
+  assert_equal false (check_answer p "3");
+  assert_equal false (check_answer p "false")
+
+let test_check_answer_trivia _ =
+  let p = mk_trivia 3 "What is the capital of Egypt?" "Cairo" in
+  assert_equal true (check_answer p "Cairo");
+  assert_equal true (check_answer p "cairo");
+  (*Testing lowercase*)
+  assert_equal true (check_answer p "  Cairo  ");
+  (*Testing whitespace*)
+  assert_equal false (check_answer p "London")
+
+(*try unlock tests----------------------------------------------*)
+let test_try_unlock_no_deps _ =
+  let p =
+    mk_riddle 1
+      " I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+  Cs3110teamproject.Puzzle.try_unlock [] p;
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status p)
+
+let test_try_unlock_with_unsolved_deps _ =
+  let _p_dep =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+  let p =
+    mk_riddle ~deps:[ 1 ] 2
+      "What begins with the letter 'P,' ends with 'E,' and has thousands of \
+       letters inside?"
+      "post office"
+  in
+  (*The bracket is the passed in list of "global solved puzzles"*)
+  Cs3110teamproject.Puzzle.try_unlock [] p;
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status p)
+
+let test_try_unlock_with_solved_deps _ =
+  let p_dep =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+  let p =
+    mk_riddle ~deps:[ 1 ] 2
+      "What begins with the letter 'P,' ends with 'E,' and has thousands of \
+       letters inside?"
+      "post office"
+  in
+  (*The bracket is the passed in list of "global solved puzzles"*)
+  Cs3110teamproject.Puzzle.try_unlock
+    [ Cs3110teamproject.Puzzle.puzzle_id p_dep ]
+    p;
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status p)
+
+let test_try_unlock_with_multiple_deps _ =
+  let p_dep1 =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+  let p_dep2 = mk_math 2 "What is 2 + 2?" 4 in
+  let p =
+    mk_riddle ~deps:[ 1; 2 ] 3
+      "What begins with the letter 'P,' ends with 'E,' and has thousands of \
+       letters inside?"
+      "post office"
+  in
+  (*The bracket is the passed in list of "global solved puzzles"*)
+  Cs3110teamproject.Puzzle.try_unlock
+    [
+      Cs3110teamproject.Puzzle.puzzle_id p_dep1;
+      Cs3110teamproject.Puzzle.puzzle_id p_dep2;
+    ]
+    p;
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status p)
+
+let test_try_unlock_already_unlocked _ =
+  (* deps = [] means puzzle unlocks immediately *)
+  let p =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+
+  (* Unlock it through the real API *)
+  Cs3110teamproject.Puzzle.try_unlock [] p;
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status p);
+
+  (* Calling try_unlock again should leave it Unlocked *)
+  Cs3110teamproject.Puzzle.try_unlock [] p;
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status p)
+
+let test_try_unlock_already_solved _ =
+  let p =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+
+  (* First, unlock it properly *)
+  Cs3110teamproject.Puzzle.try_unlock [] p;
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status p);
+
+  (* Now mark it solved *)
+  Cs3110teamproject.Puzzle.mark_solved p;
+  assert_equal Cs3110teamproject.Puzzle.Solved
+    (Cs3110teamproject.Puzzle.status p);
+
+  (* Calling try_unlock again should NOT revert or change status *)
+  Cs3110teamproject.Puzzle.try_unlock [] p;
+  assert_equal Cs3110teamproject.Puzzle.Solved
+    (Cs3110teamproject.Puzzle.status p)
+
+(*try unlock tests----------------------------------------------*)
+let test_mark_solved _ =
+  (* deps=[] so this unlocks immediately *)
+  let p =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+
+  Cs3110teamproject.Puzzle.try_unlock [] p;
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status p);
+
+  (* Now mark solved *)
+  Cs3110teamproject.Puzzle.mark_solved p;
+  assert_equal Cs3110teamproject.Puzzle.Solved
+    (Cs3110teamproject.Puzzle.status p)
+
+(* ------------------------------------------------------------- *)
+(* ROOM MODULE TEST                                              *)
+(* ------------------------------------------------------------- *)
+(*Room Creation Tests--------------------------------------------*)
+let test_make_room_basic _ =
+  let p1 =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+  let p2 = mk_math 2 "What is 2 + 2?" 4 in
+  let room = mk_room 1 "Puzzle Room" [ p1; p2 ] in
+  (* Check ID *)
+  assert_equal 1 (Cs3110teamproject.Room.room_id room);
+  (* New rooms should be Inaccessible *)
+  assert_equal Cs3110teamproject.Room.Inaccessible
+    (Cs3110teamproject.Room.status room)
+
+(*room_fulfilled tests-------------------------------------------*)
+let room_fulfilled_no_puzzles _ =
+  let room = mk_room 1 "Empty Room" [] in
+  assert_equal true (Cs3110teamproject.Room.room_fulfilled room)
+
+let room_fulfilled_not_fulfilled _ =
+  let p1 =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+  let p2 = mk_math 2 "What is 2 + 2?" 4 in
+  let room = mk_room 2 "Puzzle Room" [ p1; p2 ] in
+  (* Neither puzzle is solved yet *)
+  assert_equal false (Cs3110teamproject.Room.room_fulfilled room)
+
+let room_fullfilled_is_fulfilled _ =
+  let p1 =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+  let p2 = mk_math 2 "What is 2 + 2?" 4 in
+  let room = mk_room 3 "Puzzle Room" [ p1; p2 ] in
+  (* Unlock and solve both puzzles *)
+  Cs3110teamproject.Puzzle.try_unlock [] p1;
+  Cs3110teamproject.Puzzle.mark_solved p1;
+  Cs3110teamproject.Puzzle.try_unlock [] p2;
+  Cs3110teamproject.Puzzle.mark_solved p2;
+  assert_equal true (Cs3110teamproject.Room.room_fulfilled room)
+
+(*try_unlock tests-----------------------------------------------*)
+let test_try_unlock_room_no_deps _ =
+  let room = mk_room 1 "No Deps Room" [] in
+  Cs3110teamproject.Room.try_unlock room ~solved_puzzles:[];
+  assert_equal Cs3110teamproject.Room.Accessible
+    (Cs3110teamproject.Room.status room)
+
+let test_try_unlock_accessible_room _ =
+  let p1 =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+  let p2 = mk_math 2 "What is 2 + 2?" 4 in
+  let room = mk_room 1 "Already Accessible Room" [ p1; p2 ] in
+  Cs3110teamproject.Puzzle.try_unlock [] p1;
+  Cs3110teamproject.Puzzle.mark_solved p1;
+  room.status <- Cs3110teamproject.Room.Accessible;
+  Cs3110teamproject.Room.try_unlock room ~solved_puzzles:[];
+  assert_equal Cs3110teamproject.Room.Accessible
+    (Cs3110teamproject.Room.status room)
+
+let test_try_unlock_inaccessible_deps_solved _ =
+  let p1 =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+  let p2 = mk_math 2 "What is 2 + 2?" 4 in
+  let room = mk_room ~room_deps:[ 1; 2 ] 2 "Dependent Room" [ p1; p2 ] in
+  Cs3110teamproject.Puzzle.try_unlock [] p1;
+  Cs3110teamproject.Puzzle.mark_solved p1;
+  Cs3110teamproject.Puzzle.try_unlock [] p2;
+  Cs3110teamproject.Puzzle.mark_solved p2;
+  Cs3110teamproject.Room.try_unlock room ~solved_puzzles:[ 1; 2 ];
+  assert_equal Cs3110teamproject.Room.Accessible
+    (Cs3110teamproject.Room.status room)
+
+let test_try_unlock_inaccessible_deps_unsolved _ =
+  let p1 =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+  let p2 = mk_math 2 "What is 2 + 2?" 4 in
+  let room = mk_room ~room_deps:[ 1; 2 ] 2 "Dependent Room" [ p1; p2 ] in
+  Cs3110teamproject.Puzzle.try_unlock [] p1;
+  Cs3110teamproject.Puzzle.mark_solved p1;
+  (* p2 remains unsolved *)
+  Cs3110teamproject.Room.try_unlock room ~solved_puzzles:[ 1 ];
+  assert_equal Cs3110teamproject.Room.Inaccessible
+    (Cs3110teamproject.Room.status room)
+
+(*is_accessible tests--------------------------------------------*)
+let test_is_accessible_false _ =
+  let room = mk_room 1 "Inaccessible Room" [] in
+  assert_equal false (Cs3110teamproject.Room.is_accessible room)
+
+let test_is_accessible_true _ =
+  let room = mk_room 1 "Accessible Room" [] in
+  room.status <- Cs3110teamproject.Room.Accessible;
+  assert_equal true (Cs3110teamproject.Room.is_accessible room)
+
+(*attempt_enter tests--------------------------------------------*)
+let test_attempt_enter_inaccessible_deps_unsolved _ =
+  let p1 =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+  let p2 = mk_math 2 "What is 2 + 2?" 4 in
+  let room = mk_room ~room_deps:[ 1; 2 ] 2 "Dependent Room" [ p1; p2 ] in
+  Cs3110teamproject.Puzzle.try_unlock [] p1;
+  Cs3110teamproject.Puzzle.mark_solved p1;
+  (* p2 remains unsolved *)
+  let can_enter =
+    Cs3110teamproject.Room.attempt_enter room
+      ~solved_puzzles:[ Cs3110teamproject.Puzzle.puzzle_id p1 ]
+  in
+  assert_equal false can_enter;
+  assert_equal Cs3110teamproject.Room.Inaccessible
+    (Cs3110teamproject.Room.status room)
+
+let test_attempt_enter_inaccessible_deps_solved _ =
+  let p1 =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+  let p2 = mk_math 2 "What is 2 + 2?" 4 in
+  let room = mk_room ~room_deps:[ 1; 2 ] 2 "Dependent Room" [ p1; p2 ] in
+  Cs3110teamproject.Puzzle.try_unlock [] p1;
+  Cs3110teamproject.Puzzle.mark_solved p1;
+  Cs3110teamproject.Puzzle.try_unlock [] p2;
+  Cs3110teamproject.Puzzle.mark_solved p2;
+  let can_enter =
+    Cs3110teamproject.Room.attempt_enter room
+      ~solved_puzzles:
+        [
+          Cs3110teamproject.Puzzle.puzzle_id p1;
+          Cs3110teamproject.Puzzle.puzzle_id p2;
+        ]
+  in
+  assert_equal true can_enter;
+  assert_equal Cs3110teamproject.Room.Accessible
+    (Cs3110teamproject.Room.status room)
+
+let test_attempt_enter_accessible _ =
+  let p1 =
+    mk_riddle 1
+      "I have cities, but no houses. I have mountains, but no trees. I have \
+       water, but no fish. What am I?"
+      "map"
+  in
+  let p2 = mk_math 2 "What is 2 + 2?" 4 in
+  let room = mk_room 1 "Already Accessible Room" [ p1; p2 ] in
+  Cs3110teamproject.Puzzle.try_unlock [] p1;
+  Cs3110teamproject.Puzzle.mark_solved p1;
+  room.status <- Cs3110teamproject.Room.Accessible;
+  let can_enter =
+    Cs3110teamproject.Room.attempt_enter room ~solved_puzzles:[]
+  in
+  assert_equal true can_enter;
+  assert_equal Cs3110teamproject.Room.Accessible
+    (Cs3110teamproject.Room.status room)
 
 (* ------------------------------------------------------------- *)
 (* HINT MODULE TESTS                                             *)
@@ -204,6 +584,36 @@ let test_is_finished_false_when_unfinished _ =
 let tests =
   "test suite"
   >::: [
+         (*Puzzle Tests*)
+         "make riddle basic" >:: test_make_riddle_basic;
+         "check answer riddle" >:: test_check_answer_riddle;
+         "check answer math" >:: test_check_answer_math;
+         "check answer trivia" >:: test_check_answer_trivia;
+         "try unlock no deps" >:: test_try_unlock_no_deps;
+         "try unlock with unsolved deps" >:: test_try_unlock_with_unsolved_deps;
+         "try unlock with solved deps" >:: test_try_unlock_with_solved_deps;
+         "try unlock with multiple deps" >:: test_try_unlock_with_multiple_deps;
+         "try unlock already unlocked" >:: test_try_unlock_already_unlocked;
+         "try unlock already solved" >:: test_try_unlock_already_solved;
+         "mark solved" >:: test_mark_solved;
+         (*Room Tests*)
+         "make room basic" >:: test_make_room_basic;
+         "room fulfilled no puzzles" >:: room_fulfilled_no_puzzles;
+         "room fulfilled not fulfilled" >:: room_fulfilled_not_fulfilled;
+         "room fulfilled is fulfilled" >:: room_fullfilled_is_fulfilled;
+         "try unlock room no deps" >:: test_try_unlock_room_no_deps;
+         "try unlock accessible room" >:: test_try_unlock_accessible_room;
+         "try unlock inaccessible deps solved"
+         >:: test_try_unlock_inaccessible_deps_solved;
+         "try unlock inaccessible deps unsolved"
+         >:: test_try_unlock_inaccessible_deps_unsolved;
+         "is accessible false" >:: test_is_accessible_false;
+         "is accessible true" >:: test_is_accessible_true;
+         "attempt enter inaccessible deps unsolved"
+         >:: test_attempt_enter_inaccessible_deps_unsolved;
+         "attempt enter inaccessible deps solved"
+         >:: test_attempt_enter_inaccessible_deps_solved;
+         "attempt enter accessible" >:: test_attempt_enter_accessible;
          (* Hint Tests *)
          "Basic register and get hint" >:: test_register_and_get_hint;
          "An invalid hint should return none" >:: test_get_invalid_hint;

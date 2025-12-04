@@ -15,8 +15,15 @@ type puzzle
 
 val puzzle_id : puzzle -> int
 val status : puzzle -> puzzle_status
+val success_msg : puzzle -> string
+val puzzle_type : puzzle -> puzzle_type
 
-val make : id:int -> puzzle_type:puzzle_type -> deps:int list -> puzzle
+val make :
+  id:int ->
+  puzzle_type:puzzle_type ->
+  deps:int list ->
+  success_msg:string ->
+  puzzle
 (** Create a puzzle *)
 
 val check_answer : puzzle -> string -> bool
@@ -27,3 +34,6 @@ val mark_solved : puzzle -> unit
 
 val try_unlock : int list -> puzzle -> unit
 (** Unlock puzzle if dependencies are solved *)
+
+val set_status : puzzle -> puzzle_status -> unit
+(** Set the status of a puzzle *)
