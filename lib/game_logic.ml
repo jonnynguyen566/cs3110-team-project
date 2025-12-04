@@ -206,6 +206,7 @@ let starting_room =
       "The starting tomb with a chest and a sarcophagus that must be opened."
     ~puzzles:[ chest_puzzle; casket_puzzle ]
     ~room_deps:[]
+    ~intro_msg: "Your adventure begins here. In the tomb of kings, answers lie with their treasures."
 
 let corridor_room =
   Room.make ~id:corridor_room_id
@@ -214,12 +215,14 @@ let corridor_room =
        decoded."
     ~puzzles:[ h1_puzzle; h2_puzzle; h3_puzzle; h4_puzzle; lock_puzzle ]
     ~room_deps:[]
+    ~intro_msg: "In this chamber, your escape depends on recalling each riddle’s answer and the order in which they are revealed. To ascend beyond the desert sands, seek the creature who commands the sky."
 
 let stairway_room =
   Room.make ~id:stairway_room_id
     ~description:"A cobwebbed staircase with a door that must be unlocked."
     ~puzzles:[ torch_puzzle; spider_puzzle; doorknob_puzzle ]
     ~room_deps:[]
+    ~intro_msg: "To reveal what the sands conceal, seek the light that sleeps upon the wall."
 
 let pottery_room =
   Room.make ~id:pottery_room_id
@@ -227,6 +230,7 @@ let pottery_room =
       "A room of scrolls and pots with a final pot waiting to be opened."
     ~puzzles:[ scroll_puzzle; pot1_puzzle; pot2_puzzle; pot3_puzzle; lockedpot_puzzle ]
     ~room_deps:[]
+    ~intro_msg: "The pharaoh spoke in whispers, but his truth endures. Seek the words he bound in coils of papyrus."
 
 let () =
   Puzzle.set_status chest_puzzle Puzzle.Unlocked;

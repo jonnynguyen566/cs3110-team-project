@@ -284,13 +284,17 @@ let () =
   L.auto_scale main_layout;
   L.disable_resize main_layout;
 
-  let navigation_arrow ~x ~y ~image ~target_screen ~current_room ~main_layout () =
+  let navigation_arrow ~x ~y ~image ~target_screen ~current_room ~target_room ~main_layout () =
     let arrow = W.image ~noscale:true image in
     let arrow_layout = L.resident ~x ~y arrow in
 
     let on_click _ _ _ = 
       if Room.room_fulfilled current_room then
-        L.set_rooms main_layout [ target_screen ] 
+        (
+          L.set_rooms main_layout [ target_screen ];
+          let msg_widget = W.text_display ~w:300 ~h:85 (Room.intro_message target_room) |> L.resident in
+          Popup.one_button ~button:"OK" ~dst:target_screen msg_widget |> ignore
+        )
       else 
         let popup_msg = "You must solve all the puzzles in this room first to continue!" in
         let msg_widget = W.text_display ~w:150 ~h:70 popup_msg |> L.resident in
@@ -306,6 +310,7 @@ let () =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
       ~target_screen:screen4 
       ~current_room:Game_logic.starting_room
+      ~target_room:Game_logic.corridor_room
       ~main_layout ()
   in
 
@@ -313,6 +318,7 @@ let () =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
       ~target_screen:screen5 
       ~current_room:Game_logic.corridor_room
+      ~target_room:Game_logic.stairway_room
       ~main_layout ()
   in
 
@@ -320,6 +326,7 @@ let () =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
       ~target_screen:screen6 
       ~current_room:Game_logic.stairway_room
+      ~target_room:Game_logic.pottery_room
       ~main_layout ()
   in
 
@@ -359,7 +366,9 @@ let () =
   in
   let transition_to_starting_room _ _ _ =
     current_screen := StartingRoom;
-    L.set_rooms main_layout [ screen3 ]
+    L.set_rooms main_layout [ screen3 ];
+    let msg_widget = W.text_display ~w:300 ~h:85 (Room.intro_message Game_logic.starting_room) |> L.resident in
+    Popup.one_button ~button:"OK" ~dst:screen3 msg_widget |> ignore
   in
 
   (* Connect click handlers to screens *)
