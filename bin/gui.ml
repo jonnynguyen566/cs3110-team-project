@@ -2,6 +2,7 @@ open Bogue
 module Game_logic = Cs3110teamproject.Game_logic
 module Game_state = Cs3110teamproject.Game_state
 module Puzzle = Cs3110teamproject.Puzzle
+module Room = Cs3110teamproject.Room
 module W = Widget
 module L = Layout
 
@@ -64,7 +65,7 @@ let toggle_image ?w ?h ?x ?y ?(noscale = false) ~closed_image ~open_image
     match puzzle_status with
     | Puzzle.Locked ->
         let popup_msg = "This puzzle is locked. Solve other puzzles first!" in
-        let msg_widget = W.text_display ~w:150 popup_msg |> L.resident in
+        let msg_widget = W.text_display ~w:150 ~h:70 popup_msg |> L.resident in
         Popup.one_button ~button:"OK" ~dst:room_layout msg_widget |> ignore
     | Puzzle.Unlocked -> (
         match !state with
@@ -82,7 +83,7 @@ let toggle_image ?w ?h ?x ?y ?(noscale = false) ~closed_image ~open_image
             W.update img)
     | Puzzle.Solved ->
         let popup_msg = "This puzzle has already been solved!" in
-        let msg_widget = W.text_display ~w:150 popup_msg |> L.resident in
+        let msg_widget = W.text_display ~w:150 ~h:70 popup_msg |> L.resident in
         Popup.one_button ~button:"OK" ~dst:room_layout msg_widget |> ignore
   in
   W.connect_main img img on_click Trigger.buttons_up |> W.add_connection img;
@@ -99,7 +100,7 @@ let toggle_image_with_bg_change ?w ?h ?x ?y ?(noscale = false) ~closed_image
     match puzzle_status with
     | Puzzle.Locked ->
         let popup_msg = "This puzzle is locked. Solve other puzzles first!" in
-        let msg_widget = W.text_display ~w:150 popup_msg |> L.resident in
+        let msg_widget = W.text_display ~w:150 ~h:70 popup_msg |> L.resident in
         Popup.one_button ~button:"OK" ~dst:room_layout msg_widget |> ignore
     | Puzzle.Unlocked -> (
         match !state with
@@ -119,7 +120,7 @@ let toggle_image_with_bg_change ?w ?h ?x ?y ?(noscale = false) ~closed_image
             W.update img)
     | Puzzle.Solved ->
         let popup_msg = "This puzzle has already been solved!" in
-        let msg_widget = W.text_display ~w:150 popup_msg |> L.resident in
+        let msg_widget = W.text_display ~w:150 ~h:70 popup_msg |> L.resident in
         Popup.one_button ~button:"OK" ~dst:room_layout msg_widget |> ignore
   in
   W.connect_main img img on_click Trigger.buttons_up |> W.add_connection img;
@@ -283,11 +284,18 @@ let () =
   L.auto_scale main_layout;
   L.disable_resize main_layout;
 
-  let navigation_arrow ~x ~y ~image ~target_screen ~main_layout () =
+  let navigation_arrow ~x ~y ~image ~target_screen ~current_room ~main_layout () =
     let arrow = W.image ~noscale:true image in
     let arrow_layout = L.resident ~x ~y arrow in
 
-    let on_click _ _ _ = L.set_rooms main_layout [ target_screen ] in
+    let on_click _ _ _ = 
+      if Room.room_fulfilled current_room then
+        L.set_rooms main_layout [ target_screen ] 
+      else 
+        let popup_msg = "You must solve all the puzzles in this room first to continue!" in
+        let msg_widget = W.text_display ~w:150 ~h:70 popup_msg |> L.resident in
+        Popup.one_button ~button:"OK" ~dst:main_layout msg_widget |> ignore
+    in
 
     W.connect_main arrow arrow on_click Trigger.buttons_up
     |> W.add_connection arrow;
@@ -296,17 +304,23 @@ let () =
 
   let arrow_to_corridor =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
-      ~target_screen:screen4 ~main_layout ()
+      ~target_screen:screen4 
+      ~current_room:Game_logic.starting_room
+      ~main_layout ()
   in
 
   let arrow_to_stairway =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
-      ~target_screen:screen5 ~main_layout ()
+      ~target_screen:screen5 
+      ~current_room:Game_logic.corridor_room
+      ~main_layout ()
   in
 
   let arrow_to_pottery =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
-      ~target_screen:screen6 ~main_layout ()
+      ~target_screen:screen6 
+      ~current_room:Game_logic.stairway_room
+      ~main_layout ()
   in
 
   L.set_rooms screen3
