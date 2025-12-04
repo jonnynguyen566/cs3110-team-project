@@ -321,6 +321,7 @@ let () =
     arrow_layout
   in
 
+  (* Arrows between rooms *)
   let arrow_to_corridor =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
       ~target_screen:screen4 ~main_layout ()
@@ -341,6 +342,27 @@ let () =
       ~target_screen:screen7 ~main_layout ()
   in
 
+  (* Back arrows. Can delete after testing if necessary *)
+  let arrow_corridor_to_start =
+    navigation_arrow ~x:5 ~y:382 ~image:"images/backArrow.png"
+      ~target_screen:screen3 ~main_layout ()
+  in
+
+  let arrow_stairway_to_corridor =
+    navigation_arrow ~x:5 ~y:382 ~image:"images/backArrow.png"
+      ~target_screen:screen4 ~main_layout ()
+  in
+
+  let arrow_pottery_to_stairway =
+    navigation_arrow ~x:5 ~y:382 ~image:"images/backArrow.png"
+      ~target_screen:screen5 ~main_layout ()
+  in
+
+  let arrow_treasure_to_pottery =
+    navigation_arrow ~x:5 ~y:382 ~image:"images/backArrow.png"
+      ~target_screen:screen6 ~main_layout ()
+  in
+
   L.set_rooms screen3
     [ main_bg_layout; treasure_room; casket_room; arrow_to_corridor ];
   L.set_rooms screen4
@@ -352,6 +374,7 @@ let () =
       h3_room;
       h4_room;
       arrow_to_stairway;
+      arrow_corridor_to_start;
     ];
   L.set_rooms screen5
     [
@@ -360,6 +383,7 @@ let () =
       spider_room;
       torch_room;
       arrow_to_pottery;
+      arrow_stairway_to_corridor;
     ];
   L.set_rooms screen6
     [
@@ -370,9 +394,16 @@ let () =
       pot3_room;
       lockedpot_room;
       arrow_to_treasure;
+      arrow_pottery_to_stairway;
     ];
   L.set_rooms screen7
-    [ treasure_bg_layout; oillamp_room; map_room; lockedchest_room ];
+    [
+      treasure_bg_layout;
+      oillamp_room;
+      map_room;
+      lockedchest_room;
+      arrow_treasure_to_pottery;
+    ];
 
   let transition_to_intro2 _ _ _ =
     current_screen := Intro2;
