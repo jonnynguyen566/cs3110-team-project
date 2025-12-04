@@ -298,12 +298,12 @@ let () =
 
   let oillamp_room, oillamp_state =
     toggle_image ~x:500 ~y:600 ~w:140 ~h:120 ~closed_image:"images/oillamp.png"
-      ~open_image:"oillamp.png" ~game_state ~puzzle:oillamp_puzzle screen7 ()
+      ~open_image:"images/oillamp.png" ~game_state ~puzzle:oillamp_puzzle screen7 ()
   in
 
   let lockedchest_room, lockedchest_state =
     toggle_image ~x:820 ~y:370 ~w:280 ~h:280
-      ~closed_image:"images/lockedchest.png" ~open_image:"lockedchestopen.png"
+      ~closed_image:"images/lockedchest.png" ~open_image:"images/lockedchestopen.png"
       ~game_state ~puzzle:lockedchest_puzzle screen7 ()
   in
 
