@@ -46,6 +46,7 @@ let stairway_room_id = new_room_id ()
 let pottery_room_id = new_room_id ()
 let treasure_room_id = new_room_id ()
 let throne_room_id = new_room_id ()
+let treasure_room_id = new_room_id ()
 
 (*Chest puzzle id should be 1*)
 (* starting room puzzles *)
@@ -254,7 +255,7 @@ let plant_puzzle =
     ~deps:[]
     ~success_msg:
       "I've heard the statues here are kind of weird. Maybe you should check \
-       them out.'"
+       them out."
 
 let statue_puzzle =
   Puzzle.make ~id:statue_id
@@ -288,6 +289,9 @@ let starting_room =
       "The starting tomb with a chest and a sarcophagus that must be opened."
     ~puzzles:[ chest_puzzle; casket_puzzle ]
     ~room_deps:[]
+    ~intro_msg:
+      "Your adventure begins here. In the tomb of kings, answers lie with \
+       their treasures."
 
 let corridor_room =
   Room.make ~id:corridor_room_id
@@ -296,12 +300,19 @@ let corridor_room =
        decoded."
     ~puzzles:[ h1_puzzle; h2_puzzle; h3_puzzle; h4_puzzle; lock_puzzle ]
     ~room_deps:[]
+    ~intro_msg:
+      "In this chamber, your escape depends on recalling each riddle’s answer \
+       and the order in which they are revealed. To ascend beyond the desert \
+       sands, seek the creature who commands the sky."
 
 let stairway_room =
   Room.make ~id:stairway_room_id
     ~description:"A cobwebbed staircase with a door that must be unlocked."
     ~puzzles:[ torch_puzzle; spider_puzzle; doorknob_puzzle ]
     ~room_deps:[]
+    ~intro_msg:
+      "To reveal what the sands conceal, seek the light that sleeps upon the \
+       wall."
 
 let pottery_room =
   Room.make ~id:pottery_room_id
@@ -310,6 +321,9 @@ let pottery_room =
     ~puzzles:
       [ scroll_puzzle; pot1_puzzle; pot2_puzzle; pot3_puzzle; lockedpot_puzzle ]
     ~room_deps:[]
+    ~intro_msg:
+      "The pharaoh spoke in whispers, but his truth endures. Seek the words he \
+       bound in coils of papyrus."
 
 let treasure_room =
   Room.make ~id:treasure_room_id
@@ -318,6 +332,10 @@ let treasure_room =
        unlocked."
     ~puzzles:[ map_puzzle; oillamp_puzzle; lockedchest_puzzle ]
     ~room_deps:[]
+    ~intro_msg:
+      "The desert offers no guidance—its dunes shift with every breath of the \
+       wind.\n\
+      \      Only the hidden map remembers the true path."
 
 let throne_room =
   Room.make ~id:throne_room_id
@@ -326,13 +344,15 @@ let throne_room =
        stairway."
     ~puzzles:[ plant_puzzle; statue_puzzle; throne_puzzle ]
     ~room_deps:[]
+    ~intro_msg:
+      "Welcome to the Pharaoh's inner sanctum. The statues stand silent and \
+       the walls are cold. If you wish to leave, you’d best start by turning \
+       over a new leaf."
 
 let () =
   Puzzle.set_status chest_puzzle Puzzle.Unlocked;
   Puzzle.set_status h1_puzzle Puzzle.Unlocked;
   Puzzle.set_status torch_puzzle Puzzle.Unlocked;
-  Puzzle.set_status spider_puzzle Puzzle.Unlocked;
-  Puzzle.set_status doorknob_puzzle Puzzle.Unlocked;
   Puzzle.set_status scroll_puzzle Puzzle.Unlocked;
   Puzzle.set_status pot1_puzzle Puzzle.Unlocked;
   Puzzle.set_status pot2_puzzle Puzzle.Unlocked;
@@ -342,7 +362,8 @@ let () =
   Puzzle.set_status oillamp_puzzle Puzzle.Unlocked;
   Puzzle.set_status lockedchest_puzzle Puzzle.Unlocked;
   Puzzle.set_status scroll_puzzle Puzzle.Unlocked;
-  Puzzle.set_status plant_puzzle Puzzle.Unlocked
+  Puzzle.set_status plant_puzzle Puzzle.Unlocked;
+  Puzzle.set_status map_puzzle Puzzle.Unlocked
 
 let init_game () =
   Game_state.init

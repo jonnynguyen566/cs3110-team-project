@@ -343,14 +343,21 @@ let () =
   L.auto_scale main_layout;
   L.disable_resize main_layout;
 
-  let navigation_arrow ~x ~y ~image ~target_screen ~current_room ~main_layout
-      ~optional () =
+  (* MAKE DEFAULT OPTIONAL FALSE BEFORE PROD *)
+  let navigation_arrow ~x ~y ~image ~target_screen ~current_room ~target_room
+      ~main_layout ?(optional = true) () =
     let arrow = W.image ~noscale:true image in
     let arrow_layout = L.resident ~x ~y arrow in
 
     let on_click _ _ _ =
-      if optional || Room.room_fulfilled current_room then
-        L.set_rooms main_layout [ target_screen ]
+      if optional then L.set_rooms main_layout [ target_screen ]
+      else if Room.room_fulfilled current_room then (
+        L.set_rooms main_layout [ target_screen ];
+        let msg_widget =
+          W.text_display ~w:300 ~h:85 (Room.intro_message target_room)
+          |> L.resident
+        in
+        Popup.one_button ~button:"OK" ~dst:target_screen msg_widget |> ignore)
       else
         let popup_msg =
           "You must solve all the puzzles in this room first to continue!"
@@ -367,63 +374,63 @@ let () =
   (* Arrows between rooms. MAKE OPTIONAL FALSE BEFORE PROD*)
   let arrow_to_corridor =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
-      ~target_screen:screen4 ~current_room:Game_logic.starting_room ~main_layout
-      ~optional:true ()
+      ~target_screen:screen4 ~current_room:Game_logic.starting_room
+      ~target_room:Game_logic.corridor_room ~main_layout ()
   in
 
   let arrow_to_stairway =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
-      ~target_screen:screen5 ~current_room:Game_logic.corridor_room ~main_layout
-      ~optional:true ()
+      ~target_screen:screen5 ~current_room:Game_logic.corridor_room
+      ~target_room:Game_logic.stairway_room ~main_layout ()
   in
 
   let arrow_to_pottery =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
-      ~target_screen:screen6 ~current_room:Game_logic.stairway_room ~main_layout
-      ~optional:true ()
+      ~target_screen:screen6 ~current_room:Game_logic.stairway_room
+      ~target_room:Game_logic.pottery_room ~main_layout ()
   in
 
   let arrow_to_treasure =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
-      ~target_screen:screen7 ~current_room:Game_logic.pottery_room ~main_layout
-      ~optional:true ()
+      ~target_screen:screen7 ~current_room:Game_logic.pottery_room
+      ~target_room:Game_logic.treasure_room ~main_layout ~optional:true ()
   in
 
   let arrow_to_throneroom =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
-      ~target_screen:screen8 ~current_room:Game_logic.treasure_room ~main_layout
-      ~optional:true ()
+      ~target_screen:screen8 ~current_room:Game_logic.treasure_room
+      ~target_room:Game_logic.throne_room ~main_layout ~optional:true ()
   in
 
   (* Back arrows. Optional is true. *)
   let arrow_corridor_to_start =
     navigation_arrow ~x:5 ~y:382 ~image:"images/backArrow.png"
-      ~target_screen:screen3 ~current_room:Game_logic.corridor_room ~main_layout
-      ~optional:true ()
+      ~target_screen:screen3 ~current_room:Game_logic.corridor_room
+      ~target_room:Game_logic.starting_room ~main_layout ~optional:true ()
   in
 
   let arrow_stairway_to_corridor =
     navigation_arrow ~x:5 ~y:382 ~image:"images/backArrow.png"
-      ~target_screen:screen4 ~current_room:Game_logic.stairway_room ~main_layout
-      ~optional:true ()
+      ~target_screen:screen4 ~current_room:Game_logic.stairway_room
+      ~target_room:Game_logic.corridor_room ~main_layout ~optional:true ()
   in
 
   let arrow_pottery_to_stairway =
     navigation_arrow ~x:5 ~y:382 ~image:"images/backArrow.png"
-      ~target_screen:screen5 ~current_room:Game_logic.pottery_room ~main_layout
-      ~optional:true ()
+      ~target_screen:screen5 ~current_room:Game_logic.pottery_room
+      ~target_room:Game_logic.stairway_room ~main_layout ~optional:true ()
   in
 
   let arrow_treasure_to_pottery =
     navigation_arrow ~x:5 ~y:382 ~image:"images/backArrow.png"
-      ~target_screen:screen6 ~current_room:Game_logic.treasure_room ~main_layout
-      ~optional:true ()
+      ~target_screen:screen6 ~current_room:Game_logic.treasure_room
+      ~target_room:Game_logic.pottery_room ~main_layout ~optional:true ()
   in
 
   let arrow_throne_to_treasure =
     navigation_arrow ~x:5 ~y:382 ~image:"images/backArrow.png"
-      ~target_screen:screen7 ~current_room:Game_logic.throne_room ~main_layout
-      ~optional:true ()
+      ~target_screen:screen7 ~current_room:Game_logic.throne_room
+      ~target_room:Game_logic.treasure_room ~main_layout ~optional:true ()
   in
 
   L.set_rooms screen3
@@ -484,7 +491,12 @@ let () =
   in
   let transition_to_starting_room _ _ _ =
     current_screen := StartingRoom;
-    L.set_rooms main_layout [ screen3 ]
+    L.set_rooms main_layout [ screen3 ];
+    let msg_widget =
+      W.text_display ~w:300 ~h:85 (Room.intro_message Game_logic.starting_room)
+      |> L.resident
+    in
+    Popup.one_button ~button:"OK" ~dst:screen3 msg_widget |> ignore
   in
 
   (* Connect click handlers to screens *)

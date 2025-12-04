@@ -8,17 +8,20 @@ type room = {
   puzzles : Puzzle.puzzle list;
   room_deps : int list;
   mutable status : room_status;
+  intro_msg : string
 }
 
 val room_id : room -> int
 val status : room -> room_status
 val puzzles : room -> Puzzle.puzzle list
+val intro_message : room -> string
 
 val make :
   id:int ->
   description:string ->
   puzzles:Puzzle.puzzle list ->
   room_deps:int list ->
+  intro_msg:string ->
   room
 (** Create a new room *)
 val room_fulfilled : room -> bool
