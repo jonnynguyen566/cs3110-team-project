@@ -339,9 +339,35 @@ let () =
       ~game_state ~puzzle:throne_puzzle screen8 ()
   in
 
-  let main_layout = L.superpose ~w:bg_w ~h:bg_h [ screen1 ] in
+  (* Timer display - styled with label for better visibility *)
+  let timer_display =
+    W.label ~fg:(Draw.opaque Draw.black) ~size:22 "Time: 00:00"
+  in
+  let timer_bg = W.image ~w:220 ~h:70 "images/scroll_open.png" in
+  let timer_layout =
+    L.superpose
+      [
+        L.resident ~x:(bg_w - 240) ~y:15 timer_bg;
+        L.resident ~x:(bg_w - 190) ~y:35 timer_display;
+      ]
+  in
+
+  (* Timer update function - refreshes every second *)
+  let rec update_timer () =
+    let elapsed = Game_state.elapsed_time game_state in
+    let formatted = Game_state.format_time elapsed in
+    Label.set (W.get_label timer_display) ("Time: " ^ formatted);
+    W.update timer_display;
+    (* Force widget redraw *)
+    (* Schedule next update in 1 second (1000ms) *)
+    ignore (Timeout.add 1000 update_timer)
+  in
+
+  let main_layout = L.superpose ~w:bg_w ~h:bg_h [ screen1; timer_layout ] in
   L.auto_scale main_layout;
   L.disable_resize main_layout;
+
+  let show_screen room = L.set_rooms main_layout [ room; timer_layout ] in
 
   (* MAKE DEFAULT OPTIONAL FALSE BEFORE PROD *)
   let navigation_arrow ~x ~y ~image ~target_screen ~current_room ~target_room
@@ -350,9 +376,9 @@ let () =
     let arrow_layout = L.resident ~x ~y arrow in
 
     let on_click _ _ _ =
-      if optional then L.set_rooms main_layout [ target_screen ]
+      if optional then show_screen target_screen
       else if Room.room_fulfilled current_room then (
-        L.set_rooms main_layout [ target_screen ];
+        show_screen target_screen;
         let msg_widget =
           W.text_display ~w:300 ~h:85 (Room.intro_message target_room)
           |> L.resident
@@ -487,11 +513,13 @@ let () =
 
   let transition_to_intro2 _ _ _ =
     current_screen := Intro2;
-    L.set_rooms main_layout [ screen2 ]
+    show_screen screen2
   in
   let transition_to_starting_room _ _ _ =
     current_screen := StartingRoom;
-    L.set_rooms main_layout [ screen3 ];
+    show_screen screen3;
+    (* Start the timer when player enters the starting room *)
+    Game_state.start_timer game_state;
     let msg_widget =
       W.text_display ~w:300 ~h:85 (Room.intro_message Game_logic.starting_room)
       |> L.resident
@@ -511,4 +539,8 @@ let () =
     Trigger.buttons_up
   |> W.add_connection instructions;
 
-  main_layout |> Bogue.of_layout |> Bogue.run
+  (* Start the timer update loop *)
+  update_timer ();
+
+  let board = main_layout |> Bogue.of_layout in
+  Bogue.run board
