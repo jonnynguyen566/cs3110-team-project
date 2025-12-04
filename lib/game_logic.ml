@@ -37,10 +37,15 @@ let lockedpot_id = new_puzzle_id ()
 let map_id = new_puzzle_id ()
 let oillamp_id = new_puzzle_id ()
 let lockedchest_id = new_puzzle_id ()
+let plant_id = new_puzzle_id ()
+let statue_id = new_puzzle_id ()
+let throne_id = new_puzzle_id ()
 let starting_room_id = new_room_id ()
 let corridor_room_id = new_room_id ()
 let stairway_room_id = new_room_id ()
 let pottery_room_id = new_room_id ()
+let treasure_room_id = new_room_id ()
+let throne_room_id = new_room_id ()
 
 (*Chest puzzle id should be 1*)
 (* starting room puzzles *)
@@ -236,6 +241,47 @@ let lockedchest_puzzle =
            "332" ))
     ~deps:[ oillamp_id ] ~success_msg:"Goodbye treasure room :("
 
+(* Throne room puzzles *)
+let plant_puzzle =
+  Puzzle.make ~id:plant_id
+    ~puzzle_type:
+      (Riddle
+         ( "I am tiny but full of power,\n\
+            Push me in soil, I’ll grow a tower.\n\
+            I start the life of every weed—\n\
+            What am I? I am a ______.",
+           "seed" ))
+    ~deps:[]
+    ~success_msg:
+      "I've heard the statues here are kind of weird. Maybe you should check \
+       them out.'"
+
+let statue_puzzle =
+  Puzzle.make ~id:statue_id
+    ~puzzle_type:
+      (Riddle
+         ( "I’m Egypt’s lifeline, mile by mile,\n\
+            A wiggly blue, not just a file.\n\
+            In every map I wear a smile—\n\
+            what river am I? I’m the ______.",
+           "nile" ))
+    ~deps:[ plant_id ]
+    ~success_msg:
+      "The end is near. Maybe you should try out the throne and play royalty \
+       for a day."
+
+let throne_puzzle =
+  Puzzle.make ~id:throne_id
+    ~puzzle_type:
+      (Trivia
+         ( "What was the name of the last active pharaoh of ancient Egypt, \
+            famous for her romances with Julius Caesar and Mark Antony?",
+           "cleopatra" ))
+    ~deps:[ statue_id ]
+    ~success_msg:
+      "Don't you want to stay a while? Come back if you ever want to be a king."
+
+(* Room creations *)
 let starting_room =
   Room.make ~id:starting_room_id
     ~description:
@@ -266,10 +312,19 @@ let pottery_room =
     ~room_deps:[]
 
 let treasure_room =
-  Room.make ~id:3
+  Room.make ~id:treasure_room_id
     ~description:
-      "A with treasures and a map with a final chest that must be unlocked."
+      "A room with treasures and a map with a final chest that must be \
+       unlocked."
     ~puzzles:[ map_puzzle; oillamp_puzzle; lockedchest_puzzle ]
+    ~room_deps:[]
+
+let throne_room =
+  Room.make ~id:throne_room_id
+    ~description:
+      "A grand throne room with statues and plants that reveal a hidden \
+       stairway."
+    ~puzzles:[ plant_puzzle; statue_puzzle; throne_puzzle ]
     ~room_deps:[]
 
 let () =
@@ -286,12 +341,18 @@ let () =
   Puzzle.set_status map_puzzle Puzzle.Unlocked;
   Puzzle.set_status oillamp_puzzle Puzzle.Unlocked;
   Puzzle.set_status lockedchest_puzzle Puzzle.Unlocked;
-  Puzzle.set_status scroll_puzzle Puzzle.Unlocked
+  Puzzle.set_status scroll_puzzle Puzzle.Unlocked;
+  Puzzle.set_status plant_puzzle Puzzle.Unlocked
 
 let init_game () =
   Game_state.init
     ~rooms:
       [
-        starting_room; corridor_room; stairway_room; pottery_room; treasure_room;
+        starting_room;
+        corridor_room;
+        stairway_room;
+        pottery_room;
+        treasure_room;
+        throne_room;
       ]
     ~start:0

@@ -147,6 +147,9 @@ let () =
   let map_puzzle = Game_logic.map_puzzle in
   let oillamp_puzzle = Game_logic.oillamp_puzzle in
   let lockedchest_puzzle = Game_logic.lockedchest_puzzle in
+  let plant_puzzle = Game_logic.plant_puzzle in
+  let statue_puzzle = Game_logic.statue_puzzle in
+  let throne_puzzle = Game_logic.throne_puzzle in
 
   let bg_w, bg_h = (1280, 720) in
   let current_screen = ref Intro1 in
@@ -200,6 +203,14 @@ let () =
   let treasure_bg_layout = L.resident ~w:bg_w ~h:bg_h treasure_bg in
   let screen7 = L.superpose ~w:bg_w ~h:bg_h [ treasure_bg_layout ] in
 
+  (* throne room *)
+  let throne_bg =
+    W.image ~w:bg_w ~h:bg_h ~noscale:true "images/throne_room.jpg"
+  in
+  let throne_bg_layout = L.resident ~w:bg_w ~h:bg_h throne_bg in
+  let screen8 = L.superpose ~w:bg_w ~h:bg_h [ throne_bg_layout ] in
+
+  (* Starting room items*)
   let treasure_room, treasure_state =
     toggle_image ~x:800 ~y:470 ~w:325 ~h:163
       ~closed_image:"images/chest_closed.png"
@@ -214,7 +225,7 @@ let () =
       screen3 ()
   in
 
-  (* Corridor Room *)
+  (* Corridor Room items *)
   let lock_room, lock_state =
     toggle_image ~x:640 ~y:370 ~w:30 ~h:45
       ~closed_image:"images/lock_closed.png" ~open_image:"images/lock_open.png"
@@ -240,7 +251,7 @@ let () =
       ~open_image:"images/h4_dark.png" ~game_state ~puzzle:h4_puzzle screen4 ()
   in
 
-  (* stairway room *)
+  (* Stairway room items *)
   let doorknob_room, doorknob_state =
     toggle_image_with_bg_change ~x:910 ~y:280 ~w:40 ~h:80
       ~closed_image:"images/doorknob.png" ~open_image:"images/transparent.png"
@@ -261,7 +272,7 @@ let () =
       screen5 ()
   in
 
-  (* Pottery room *)
+  (* Pottery room items *)
   let scroll_room, scroll_state =
     toggle_image ~x:610 ~y:380 ~w:167 ~h:167
       ~closed_image:"images/scroll_closed.png"
@@ -290,7 +301,7 @@ let () =
       ~game_state ~puzzle:lockedpot_puzzle screen6 ()
   in
 
-  (* Treasure room *)
+  (* Treasure room items *)
   let map_room, map_state =
     toggle_image ~x:420 ~y:425 ~w:300 ~h:120 ~closed_image:"images/map.png"
       ~open_image:"images/map.png" ~game_state ~puzzle:map_puzzle screen7 ()
@@ -298,13 +309,34 @@ let () =
 
   let oillamp_room, oillamp_state =
     toggle_image ~x:500 ~y:600 ~w:140 ~h:120 ~closed_image:"images/oillamp.png"
-      ~open_image:"images/oillamp.png" ~game_state ~puzzle:oillamp_puzzle screen7 ()
+      ~open_image:"images/oillamp.png" ~game_state ~puzzle:oillamp_puzzle
+      screen7 ()
   in
 
   let lockedchest_room, lockedchest_state =
     toggle_image ~x:820 ~y:370 ~w:280 ~h:280
-      ~closed_image:"images/lockedchest.png" ~open_image:"images/lockedchestopen.png"
-      ~game_state ~puzzle:lockedchest_puzzle screen7 ()
+      ~closed_image:"images/lockedchest.png"
+      ~open_image:"images/lockedchestopen.png" ~game_state
+      ~puzzle:lockedchest_puzzle screen7 ()
+  in
+
+  (* Throne room items *)
+  let plant_room, plant_state =
+    toggle_image ~x:1060 ~y:300 ~w:236 ~h:450 ~closed_image:"images/plant.png"
+      ~open_image:"images/plant.png" ~game_state ~puzzle:plant_puzzle screen8 ()
+  in
+
+  let statue_room, statue_state =
+    toggle_image ~x:830 ~y:240 ~w:300 ~h:500
+      ~closed_image:"images/statueclosed.png"
+      ~open_image:"images/statueopen.png" ~game_state ~puzzle:statue_puzzle
+      screen8 ()
+  in
+  let throne_room, throne_state =
+    toggle_image_with_bg_change ~x:370 ~y:90 ~w:500 ~h:510
+      ~closed_image:"images/throne.png" ~open_image:"images/transparent.png"
+      ~bg_widget:throne_bg ~new_bg_image:"images/throne_room_exit.jpg"
+      ~game_state ~puzzle:throne_puzzle screen8 ()
   in
 
   let main_layout = L.superpose ~w:bg_w ~h:bg_h [ screen1 ] in
@@ -357,6 +389,12 @@ let () =
       ~optional:true ()
   in
 
+  let arrow_to_throneroom =
+    navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
+      ~target_screen:screen8 ~current_room:Game_logic.treasure_room ~main_layout
+      ~optional:true ()
+  in
+
   (* Back arrows. Optional is true. *)
   let arrow_corridor_to_start =
     navigation_arrow ~x:5 ~y:382 ~image:"images/backArrow.png"
@@ -379,6 +417,12 @@ let () =
   let arrow_treasure_to_pottery =
     navigation_arrow ~x:5 ~y:382 ~image:"images/backArrow.png"
       ~target_screen:screen6 ~current_room:Game_logic.treasure_room ~main_layout
+      ~optional:true ()
+  in
+
+  let arrow_throne_to_treasure =
+    navigation_arrow ~x:5 ~y:382 ~image:"images/backArrow.png"
+      ~target_screen:screen7 ~current_room:Game_logic.throne_room ~main_layout
       ~optional:true ()
   in
 
@@ -422,6 +466,16 @@ let () =
       map_room;
       lockedchest_room;
       arrow_treasure_to_pottery;
+      arrow_to_throneroom;
+    ];
+
+  L.set_rooms screen8
+    [
+      throne_bg_layout;
+      plant_room;
+      statue_room;
+      throne_room;
+      arrow_throne_to_treasure;
     ];
 
   let transition_to_intro2 _ _ _ =
