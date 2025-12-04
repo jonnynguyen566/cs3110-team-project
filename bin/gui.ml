@@ -147,6 +147,9 @@ let () =
   let map_puzzle = Game_logic.map_puzzle in
   let oillamp_puzzle = Game_logic.oillamp_puzzle in
   let lockedchest_puzzle = Game_logic.lockedchest_puzzle in
+  let plant_puzzle = Game_logic.plant_puzzle in
+  let statue_puzzle = Game_logic.statue_puzzle in
+  let throne_puzzle = Game_logic.throne_puzzle in
 
   let bg_w, bg_h = (1280, 720) in
   let current_screen = ref Intro1 in
@@ -200,6 +203,14 @@ let () =
   let treasure_bg_layout = L.resident ~w:bg_w ~h:bg_h treasure_bg in
   let screen7 = L.superpose ~w:bg_w ~h:bg_h [ treasure_bg_layout ] in
 
+  (* throne room *)
+  let throne_bg =
+    W.image ~w:bg_w ~h:bg_h ~noscale:true "images/throne_room.jpg"
+  in
+  let throne_bg_layout = L.resident ~w:bg_w ~h:bg_h throne_bg in
+  let screen8 = L.superpose ~w:bg_w ~h:bg_h [ throne_bg_layout ] in
+
+  (* Starting room items*)
   let treasure_room, treasure_state =
     toggle_image ~x:800 ~y:470 ~w:325 ~h:163
       ~closed_image:"images/chest_closed.png"
@@ -214,7 +225,7 @@ let () =
       screen3 ()
   in
 
-  (* Corridor Room *)
+  (* Corridor Room items *)
   let lock_room, lock_state =
     toggle_image ~x:640 ~y:370 ~w:30 ~h:45
       ~closed_image:"images/lock_closed.png" ~open_image:"images/lock_open.png"
@@ -240,7 +251,7 @@ let () =
       ~open_image:"images/h4_dark.png" ~game_state ~puzzle:h4_puzzle screen4 ()
   in
 
-  (* stairway room *)
+  (* Stairway room items *)
   let doorknob_room, doorknob_state =
     toggle_image_with_bg_change ~x:910 ~y:280 ~w:40 ~h:80
       ~closed_image:"images/doorknob.png" ~open_image:"images/transparent.png"
@@ -261,7 +272,7 @@ let () =
       screen5 ()
   in
 
-  (* Pottery room *)
+  (* Pottery room items *)
   let scroll_room, scroll_state =
     toggle_image ~x:610 ~y:380 ~w:167 ~h:167
       ~closed_image:"images/scroll_closed.png"
@@ -290,7 +301,7 @@ let () =
       ~game_state ~puzzle:lockedpot_puzzle screen6 ()
   in
 
-  (* Treasure room *)
+  (* Treasure room items *)
   let map_room, map_state =
     toggle_image ~x:420 ~y:425 ~w:300 ~h:120 ~closed_image:"images/map.png"
       ~open_image:"images/map.png" ~game_state ~puzzle:map_puzzle screen7 ()
@@ -298,27 +309,81 @@ let () =
 
   let oillamp_room, oillamp_state =
     toggle_image ~x:500 ~y:600 ~w:140 ~h:120 ~closed_image:"images/oillamp.png"
-      ~open_image:"images/oillamp.png" ~game_state ~puzzle:oillamp_puzzle screen7 ()
+      ~open_image:"images/oillamp.png" ~game_state ~puzzle:oillamp_puzzle
+      screen7 ()
   in
 
   let lockedchest_room, lockedchest_state =
     toggle_image ~x:820 ~y:370 ~w:280 ~h:280
-      ~closed_image:"images/lockedchest.png" ~open_image:"images/lockedchestopen.png"
-      ~game_state ~puzzle:lockedchest_puzzle screen7 ()
+      ~closed_image:"images/lockedchest.png"
+      ~open_image:"images/lockedchestopen.png" ~game_state
+      ~puzzle:lockedchest_puzzle screen7 ()
   in
 
-  let main_layout = L.superpose ~w:bg_w ~h:bg_h [ screen1 ] in
+  (* Throne room items *)
+  let plant_room, plant_state =
+    toggle_image ~x:1060 ~y:300 ~w:236 ~h:450 ~closed_image:"images/plant.png"
+      ~open_image:"images/plant.png" ~game_state ~puzzle:plant_puzzle screen8 ()
+  in
+
+  let statue_room, statue_state =
+    toggle_image ~x:830 ~y:240 ~w:300 ~h:500
+      ~closed_image:"images/statueclosed.png"
+      ~open_image:"images/statueopen.png" ~game_state ~puzzle:statue_puzzle
+      screen8 ()
+  in
+  let throne_room, throne_state =
+    toggle_image_with_bg_change ~x:370 ~y:90 ~w:500 ~h:510
+      ~closed_image:"images/throne.png" ~open_image:"images/transparent.png"
+      ~bg_widget:throne_bg ~new_bg_image:"images/throne_room_exit.jpg"
+      ~game_state ~puzzle:throne_puzzle screen8 ()
+  in
+
+  (* Timer display - styled with label for better visibility *)
+  let timer_display =
+    W.label ~fg:(Draw.opaque Draw.black) ~size:22 "Time: 00:00"
+  in
+  let timer_bg = W.image ~w:220 ~h:70 "images/scroll_open.png" in
+  let timer_layout =
+    L.superpose
+      [
+        L.resident ~x:(bg_w - 240) ~y:15 timer_bg;
+        L.resident ~x:(bg_w - 190) ~y:35 timer_display;
+      ]
+  in
+
+  (* Timer update function - refreshes every second *)
+  let rec update_timer () =
+    let elapsed = Game_state.elapsed_time game_state in
+    let formatted = Game_state.format_time elapsed in
+    Label.set (W.get_label timer_display) ("Time: " ^ formatted);
+    W.update timer_display;
+    (* Force widget redraw *)
+    (* Schedule next update in 1 second (1000ms) *)
+    ignore (Timeout.add 1000 update_timer)
+  in
+
+  let main_layout = L.superpose ~w:bg_w ~h:bg_h [ screen1; timer_layout ] in
   L.auto_scale main_layout;
   L.disable_resize main_layout;
 
-  let navigation_arrow ~x ~y ~image ~target_screen ~current_room ~main_layout
-      ~optional () =
+  let show_screen room = L.set_rooms main_layout [ room; timer_layout ] in
+
+  (* MAKE DEFAULT OPTIONAL FALSE BEFORE PROD *)
+  let navigation_arrow ~x ~y ~image ~target_screen ~current_room ~target_room
+      ~main_layout ?(optional = true) () =
     let arrow = W.image ~noscale:true image in
     let arrow_layout = L.resident ~x ~y arrow in
 
     let on_click _ _ _ =
-      if optional || Room.room_fulfilled current_room then
-        L.set_rooms main_layout [ target_screen ]
+      if optional then show_screen target_screen
+      else if Room.room_fulfilled current_room then (
+        show_screen target_screen;
+        let msg_widget =
+          W.text_display ~w:300 ~h:85 (Room.intro_message target_room)
+          |> L.resident
+        in
+        Popup.one_button ~button:"OK" ~dst:target_screen msg_widget |> ignore)
       else
         let popup_msg =
           "You must solve all the puzzles in this room first to continue!"
@@ -335,51 +400,63 @@ let () =
   (* Arrows between rooms. MAKE OPTIONAL FALSE BEFORE PROD*)
   let arrow_to_corridor =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
-      ~target_screen:screen4 ~current_room:Game_logic.starting_room ~main_layout
-      ~optional:true ()
+      ~target_screen:screen4 ~current_room:Game_logic.starting_room
+      ~target_room:Game_logic.corridor_room ~main_layout ()
   in
 
   let arrow_to_stairway =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
-      ~target_screen:screen5 ~current_room:Game_logic.corridor_room ~main_layout
-      ~optional:true ()
+      ~target_screen:screen5 ~current_room:Game_logic.corridor_room
+      ~target_room:Game_logic.stairway_room ~main_layout ()
   in
 
   let arrow_to_pottery =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
-      ~target_screen:screen6 ~current_room:Game_logic.stairway_room ~main_layout
-      ~optional:true ()
+      ~target_screen:screen6 ~current_room:Game_logic.stairway_room
+      ~target_room:Game_logic.pottery_room ~main_layout ()
   in
 
   let arrow_to_treasure =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
-      ~target_screen:screen7 ~current_room:Game_logic.pottery_room ~main_layout
-      ~optional:true ()
+      ~target_screen:screen7 ~current_room:Game_logic.pottery_room
+      ~target_room:Game_logic.treasure_room ~main_layout ~optional:true ()
+  in
+
+  let arrow_to_throneroom =
+    navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
+      ~target_screen:screen8 ~current_room:Game_logic.treasure_room
+      ~target_room:Game_logic.throne_room ~main_layout ~optional:true ()
   in
 
   (* Back arrows. Optional is true. *)
   let arrow_corridor_to_start =
     navigation_arrow ~x:5 ~y:382 ~image:"images/backArrow.png"
-      ~target_screen:screen3 ~current_room:Game_logic.corridor_room ~main_layout
-      ~optional:true ()
+      ~target_screen:screen3 ~current_room:Game_logic.corridor_room
+      ~target_room:Game_logic.starting_room ~main_layout ~optional:true ()
   in
 
   let arrow_stairway_to_corridor =
     navigation_arrow ~x:5 ~y:382 ~image:"images/backArrow.png"
-      ~target_screen:screen4 ~current_room:Game_logic.stairway_room ~main_layout
-      ~optional:true ()
+      ~target_screen:screen4 ~current_room:Game_logic.stairway_room
+      ~target_room:Game_logic.corridor_room ~main_layout ~optional:true ()
   in
 
   let arrow_pottery_to_stairway =
     navigation_arrow ~x:5 ~y:382 ~image:"images/backArrow.png"
-      ~target_screen:screen5 ~current_room:Game_logic.pottery_room ~main_layout
-      ~optional:true ()
+      ~target_screen:screen5 ~current_room:Game_logic.pottery_room
+      ~target_room:Game_logic.stairway_room ~main_layout ~optional:true ()
   in
 
   let arrow_treasure_to_pottery =
     navigation_arrow ~x:5 ~y:382 ~image:"images/backArrow.png"
-      ~target_screen:screen6 ~current_room:Game_logic.treasure_room ~main_layout
-      ~optional:true ()
+      ~target_screen:screen6 ~current_room:Game_logic.treasure_room
+      ~target_room:Game_logic.pottery_room ~main_layout ~optional:true ()
+  in
+
+  let arrow_throne_to_treasure =
+    navigation_arrow ~x:5 ~y:382 ~image:"images/backArrow.png"
+      ~target_screen:screen7 ~current_room:Game_logic.throne_room
+      ~target_room:Game_logic.treasure_room ~main_layout ~optional:true ()
   in
 
   L.set_rooms screen3
@@ -422,15 +499,32 @@ let () =
       map_room;
       lockedchest_room;
       arrow_treasure_to_pottery;
+      arrow_to_throneroom;
+    ];
+
+  L.set_rooms screen8
+    [
+      throne_bg_layout;
+      plant_room;
+      statue_room;
+      throne_room;
+      arrow_throne_to_treasure;
     ];
 
   let transition_to_intro2 _ _ _ =
     current_screen := Intro2;
-    L.set_rooms main_layout [ screen2 ]
+    show_screen screen2
   in
   let transition_to_starting_room _ _ _ =
     current_screen := StartingRoom;
-    L.set_rooms main_layout [ screen3 ]
+    show_screen screen3;
+    (* Start the timer when player enters the starting room *)
+    Game_state.start_timer game_state;
+    let msg_widget =
+      W.text_display ~w:300 ~h:85 (Room.intro_message Game_logic.starting_room)
+      |> L.resident
+    in
+    Popup.one_button ~button:"OK" ~dst:screen3 msg_widget |> ignore
   in
 
   (* Connect click handlers to screens *)
@@ -445,4 +539,8 @@ let () =
     Trigger.buttons_up
   |> W.add_connection instructions;
 
-  main_layout |> Bogue.of_layout |> Bogue.run
+  (* Start the timer update loop *)
+  update_timer ();
+
+  let board = main_layout |> Bogue.of_layout in
+  Bogue.run board

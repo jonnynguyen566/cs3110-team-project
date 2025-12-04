@@ -26,8 +26,9 @@ let mk_math ?(deps = []) ?(success_msg = "Solved!") id q n =
     ~deps ~success_msg
 
 (*Helper Functions for creating rooms to test with*)
-let mk_room ?(room_deps = []) id desc puzzles =
+let mk_room ?(room_deps = []) ?(intro_msg = "Welcome.") id desc puzzles =
   Cs3110teamproject.Room.make ~id ~description:desc ~puzzles ~room_deps
+    ~intro_msg
 
 (* Helper function to initialize game state *)
 let mk_gamestate rooms start = Cs3110teamproject.Game_state.init ~rooms ~start

@@ -8,14 +8,16 @@ type room = {
   puzzles : Puzzle.puzzle list;
   room_deps : int list;
   mutable status : room_status;
+  intro_msg : string;
 }
 
 let room_id r = r.id
 let status r = r.status
 let puzzles r = r.puzzles
+let intro_message r = r.intro_msg
 
-let make ~id ~description ~puzzles ~room_deps =
-  { id; description; puzzles; room_deps; status = Inaccessible }
+let make ~id ~description ~puzzles ~room_deps ~intro_msg =
+  { id; description; puzzles; room_deps; status = Inaccessible; intro_msg }
 
 (*Helper function used to check if all puzzles in a room have been solved*)
 let room_fulfilled room =
