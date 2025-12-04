@@ -41,6 +41,7 @@ let starting_room_id = new_room_id ()
 let corridor_room_id = new_room_id ()
 let stairway_room_id = new_room_id ()
 let pottery_room_id = new_room_id ()
+let treasure_room_id = new_room_id ()
 
 (*Chest puzzle id should be 1*)
 (* starting room puzzles *)
@@ -267,30 +268,24 @@ let pottery_room =
     ~puzzles:
       [ scroll_puzzle; pot1_puzzle; pot2_puzzle; pot3_puzzle; lockedpot_puzzle ]
     ~room_deps:[]
+    ~intro_msg: "The pharaoh spoke in whispers, but his truth endures. Seek the words he bound in coils of papyrus."
+
 
 let treasure_room =
-  Room.make ~id:3
+  Room.make ~id:treasure_room_id
     ~description:
       "A with treasures and a map with a final chest that must be unlocked."
     ~puzzles:[ map_puzzle; oillamp_puzzle; lockedchest_puzzle ]
     ~room_deps:[]
-    ~intro_msg: "The pharaoh spoke in whispers, but his truth endures. Seek the words he bound in coils of papyrus."
+    ~intro_msg: "The desert offers no guidance—its dunes shift with every breath of the wind.
+      Only the hidden map remembers the true path."
 
 let () =
   Puzzle.set_status chest_puzzle Puzzle.Unlocked;
   Puzzle.set_status h1_puzzle Puzzle.Unlocked;
   Puzzle.set_status torch_puzzle Puzzle.Unlocked;
-  Puzzle.set_status spider_puzzle Puzzle.Unlocked;
-  Puzzle.set_status doorknob_puzzle Puzzle.Unlocked;
   Puzzle.set_status scroll_puzzle Puzzle.Unlocked;
-  Puzzle.set_status pot1_puzzle Puzzle.Unlocked;
-  Puzzle.set_status pot2_puzzle Puzzle.Unlocked;
-  Puzzle.set_status pot3_puzzle Puzzle.Unlocked;
-  Puzzle.set_status lockedpot_puzzle Puzzle.Unlocked;
-  Puzzle.set_status map_puzzle Puzzle.Unlocked;
-  Puzzle.set_status oillamp_puzzle Puzzle.Unlocked;
-  Puzzle.set_status lockedchest_puzzle Puzzle.Unlocked;
-  Puzzle.set_status scroll_puzzle Puzzle.Unlocked
+  Puzzle.set_status map_puzzle Puzzle.Unlocked
 
 let init_game () =
   Game_state.init

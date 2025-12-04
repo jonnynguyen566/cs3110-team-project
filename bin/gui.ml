@@ -358,6 +358,13 @@ let () =
       ~main_layout ()
   in
 
+  let arrow_to_treasure =
+    navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
+      ~target_screen:screen7 
+      ~current_room:Game_logic.pottery_room
+      ~target_room:Game_logic.treasure_room
+      ~main_layout ()
+  in
   L.set_rooms screen3
     [ main_bg_layout; treasure_room; casket_room; arrow_to_corridor ];
   L.set_rooms screen4
@@ -369,7 +376,7 @@ let () =
       h3_room;
       h4_room;
       arrow_to_stairway;
-      arrow_corridor_to_start;
+      (* arrow_corridor_to_start; *)
     ];
   L.set_rooms screen5
     [
@@ -378,7 +385,7 @@ let () =
       spider_room;
       torch_room;
       arrow_to_pottery;
-      arrow_stairway_to_corridor;
+      (* arrow_stairway_to_corridor; *)
     ];
   L.set_rooms screen6
     [
@@ -389,7 +396,7 @@ let () =
       pot3_room;
       lockedpot_room;
       arrow_to_treasure;
-      arrow_pottery_to_stairway;
+      (* arrow_pottery_to_stairway; *)
     ];
   L.set_rooms screen7
     [
@@ -397,7 +404,7 @@ let () =
       oillamp_room;
       map_room;
       lockedchest_room;
-      arrow_treasure_to_pottery;
+      (* arrow_treasure_to_pottery; *)
     ];
 
   let transition_to_intro2 _ _ _ =
