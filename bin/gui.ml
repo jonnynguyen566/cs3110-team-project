@@ -138,6 +138,11 @@ let () =
   let torch_puzzle = Game_logic.torch_puzzle in
   let spider_puzzle = Game_logic.spider_puzzle in
   let doorknob_puzzle = Game_logic.doorknob_puzzle in
+  let scroll_puzzle = Game_logic.scroll_puzzle in
+  let pot1_puzzle = Game_logic.pot1_puzzle in
+  let pot2_puzzle = Game_logic.pot2_puzzle in
+  let pot3_puzzle = Game_logic.pot3_puzzle in
+  let lockedpot_puzzle = Game_logic.lockedpot_puzzle in
 
   let bg_w, bg_h = (1280, 720) in
   let current_screen = ref Intro1 in
@@ -177,6 +182,13 @@ let () =
   let stairway_bg_layout = L.resident ~w:bg_w ~h:bg_h stairway_bg in
   let screen5 = L.superpose ~w:bg_w ~h:bg_h [ stairway_bg_layout ] in
 
+  (* pottery room *)
+  let pottery_bg =
+    W.image ~w:bg_w ~h:bg_h ~noscale:true "images/potteryroom.png"
+  in
+  let potteryroom_bg_layout = L.resident ~w:bg_w ~h:bg_h pottery_bg in
+  let screen6 = L.superpose ~w:bg_w ~h:bg_h [ potteryroom_bg_layout ] in
+
   let treasure_room, treasure_state =
     toggle_image ~x:800 ~y:470 ~w:325 ~h:163
       ~closed_image:"images/chest_closed.png"
@@ -190,6 +202,8 @@ let () =
       ~open_image:"images/casket_open.png" ~game_state ~puzzle:casket_puzzle
       screen3 ()
   in
+
+  (* Corridor Room *)
   let lock_room, lock_state =
     toggle_image ~x:640 ~y:370 ~w:30 ~h:45
       ~closed_image:"images/lock_closed.png" ~open_image:"images/lock_open.png"
@@ -215,6 +229,7 @@ let () =
       ~open_image:"images/h4_dark.png" ~game_state ~puzzle:h4_puzzle screen4 ()
   in
 
+  (* stairway room *)
   let doorknob_room, doorknob_state =
     toggle_image_with_bg_change ~x:910 ~y:280 ~w:40 ~h:80
       ~closed_image:"images/doorknob.png" ~open_image:"images/transparent.png"
@@ -233,6 +248,35 @@ let () =
       ~closed_image:"images/hanging_spider.png"
       ~open_image:"images/transparent.png" ~game_state ~puzzle:spider_puzzle
       screen5 ()
+  in
+
+  (* Pottery room *)
+  let scroll_room, scroll_state =
+    toggle_image ~x:610 ~y:380 ~w:167 ~h:167
+      ~closed_image:"images/scroll_closed.png"
+      ~open_image:"images/scroll_open.png" ~game_state ~puzzle:scroll_puzzle
+      screen6 ()
+  in
+
+  let pot1_room, pot1_state =
+    toggle_image ~x:500 ~y:160 ~w:100 ~h:130 ~closed_image:"images/pot1.png"
+      ~open_image:"images/pot1.png" ~game_state ~puzzle:pot1_puzzle screen6 ()
+  in
+
+  let pot2_room, pot2_state =
+    toggle_image ~x:600 ~y:160 ~w:100 ~h:120 ~closed_image:"images/pot2.png"
+      ~open_image:"images/pot2.png" ~game_state ~puzzle:pot2_puzzle screen6 ()
+  in
+
+  let pot3_room, pot3_state =
+    toggle_image ~x:700 ~y:160 ~w:100 ~h:120 ~closed_image:"images/pot3.png"
+      ~open_image:"images/pot3.png" ~game_state ~puzzle:pot3_puzzle screen6 ()
+  in
+
+  let lockedpot_room, lockedpot_state =
+    toggle_image ~x:1000 ~y:340 ~w:140 ~h:120
+      ~closed_image:"images/lockedpot.png" ~open_image:"images/unlockedpot.png"
+      ~game_state ~puzzle:lockedpot_puzzle screen6 ()
   in
 
   let main_layout = L.superpose ~w:bg_w ~h:bg_h [ screen1 ] in
@@ -260,6 +304,11 @@ let () =
       ~target_screen:screen5 ~main_layout ()
   in
 
+  let arrow_to_pottery =
+    navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
+      ~target_screen:screen6 ~main_layout ()
+  in
+
   L.set_rooms screen3
     [ main_bg_layout; treasure_room; casket_room; arrow_to_corridor ];
   L.set_rooms screen4
@@ -273,7 +322,22 @@ let () =
       arrow_to_stairway;
     ];
   L.set_rooms screen5
-    [ stairway_bg_layout; doorknob_room; spider_room; torch_room ];
+    [
+      stairway_bg_layout;
+      doorknob_room;
+      spider_room;
+      torch_room;
+      arrow_to_pottery;
+    ];
+  L.set_rooms screen6
+    [
+      potteryroom_bg_layout;
+      scroll_room;
+      pot1_room;
+      pot2_room;
+      pot3_room;
+      lockedpot_room;
+    ];
 
   let transition_to_intro2 _ _ _ =
     current_screen := Intro2;

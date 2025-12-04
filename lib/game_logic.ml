@@ -11,48 +11,6 @@ let new_puzzle_id () =
   global_puzzleid_counter := pid + 1;
   pid
 
-(*Instantiating types for puzzles*)
-type puzzle_status =
-  | Locked (*Puzzle hasn't been revealed yet/isn't visible*)
-  | Unlocked (*Puzzle is unlocked and can be interacted with*)
-  | Solved (*Puzzle marked as solved, can use for unlocking dependent puzzles*)
-
-type puzzle_type =
-  | Riddle of string * string (*question, answer*)
-  | Math of string * int (*question, numeric answer*)
-  | Trivia of string * string (*question, answer*)
-
-(*Will ensure that puzzle_id will start at 0*)
-type puzzle = {
-  puzzle_id : int;
-  puzzle_type : puzzle_type;
-  mutable status : puzzle_status;
-  deps : int list;
-      (*List of puzzle IDs that must be solved before this puzzle can be
-        attempted*)
-  success_msg : string;
-}
-
-(*Instantiating types for rooms*)
-type room_status =
-  | Inaccessible (*Room cannot be accessed yet*)
-  | Accessible (*Room can be accessed by the player*)
-
-(*Will ensure that room_id will start at 0*)
-type room = {
-  room_id : int;
-  mutable status : room_status;
-  description : string;
-  puzzles : puzzle list; (* List of puzzles in the room *)
-  room_deps : int list (* puzzle IDs required to unlock room *);
-}
-
-(*Game state determines which room the player is currently in which rooms have
-  been unlocked (meaning they can access those rooms)*)
-type game_state = {
-  mutable current_room : room;
-  rooms : room list; (* List of all rooms in the game, static*)
-}
 
 (*Room related functions*)
 let rec get_next_room game_state =
@@ -209,6 +167,56 @@ let doorknob_puzzle =
       (Math ("Evaluate this expression: let x = 3 in let x = x + 4 in x", 7))
     ~deps:[] ~success_msg:"The door creaks open, revealing a way forward!"
 
+(* pottery room puzzles *)
+let scroll_puzzle =
+  Puzzle.make ~id:10
+    ~puzzle_type:
+      (Riddle
+         ( "To find the puzzle which you seek, look at lists; they're not so \
+            weak.\n\
+            One piece in front, a trail behind,\n\
+            with brackets keeping all aligned.\n\
+            Split in two, I never fail:\n\
+            my front is head, my back is ____.",
+           "tail" ))
+    ~deps:[]
+    ~success_msg:
+      "The head comes first, but the tails prevail! Now seek three pots to \
+       lead the trail."
+
+let pot1_puzzle =
+  Puzzle.make ~id:11
+    ~puzzle_type:
+      (Riddle
+         ( "What is the symbol for appending to a list in OCaml? (Type the \
+            actual symbol)",
+           "@" ))
+    ~deps:[]
+    ~success_msg:"This is #1. Be sure to remember! Explore the next two pots."
+
+let pot2_puzzle =
+  Puzzle.make ~id:12
+    ~puzzle_type:
+      (Riddle
+         ( "I know no one uses this anymore... but what's the pound key? (The \
+            actual symbol)",
+           "#" ))
+    ~deps:[] ~success_msg:"This is #2. Again, don't forget... "
+
+let pot3_puzzle =
+  Puzzle.make ~id:13
+    ~puzzle_type:(Riddle ("What is the symbol for the modulo operator?", "%"))
+    ~deps:[]
+    ~success_msg:
+      "This is #3. Perhaps these symbols would be useful in opening a lock \
+       somewhere."
+
+let lockedpot_puzzle =
+  Puzzle.make ~id:14
+    ~puzzle_type:
+      (Riddle ("Enter the three symbol code to unchain this pot.", "@#%"))
+    ~deps:[] ~success_msg:"This gave you a key to the next room. Nice. So long."
+
 let starting_room =
   Room.make ~id:0
     ~description:
@@ -230,6 +238,13 @@ let stairway_room =
     ~puzzles:[ torch_puzzle; spider_puzzle; doorknob_puzzle ]
     ~room_deps:[]
 
+let pottery_room =
+  Room.make ~id:3
+    ~description:
+      "A room of scrolls and pots with a final pot waiting to be opened."
+    ~puzzles:[ torch_puzzle; spider_puzzle; doorknob_puzzle ]
+    ~room_deps:[]
+
 let () =
   Puzzle.set_status chest_puzzle Puzzle.Unlocked;
   Puzzle.set_status casket_puzzle Puzzle.Unlocked;
@@ -240,9 +255,14 @@ let () =
   Puzzle.set_status lock_puzzle Puzzle.Unlocked;
   Puzzle.set_status torch_puzzle Puzzle.Unlocked;
   Puzzle.set_status spider_puzzle Puzzle.Unlocked;
-  Puzzle.set_status doorknob_puzzle Puzzle.Unlocked
+  Puzzle.set_status doorknob_puzzle Puzzle.Unlocked;
+  Puzzle.set_status scroll_puzzle Puzzle.Unlocked;
+  Puzzle.set_status pot1_puzzle Puzzle.Unlocked;
+  Puzzle.set_status pot2_puzzle Puzzle.Unlocked;
+  Puzzle.set_status pot3_puzzle Puzzle.Unlocked;
+  Puzzle.set_status lockedpot_puzzle Puzzle.Unlocked
 
 let init_game () =
   Game_state.init
-    ~rooms:[ starting_room; corridor_room; stairway_room ]
+    ~rooms:[ starting_room; corridor_room; stairway_room; pottery_room ]
     ~start:0
