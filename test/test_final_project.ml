@@ -581,6 +581,221 @@ let test_is_finished_false_when_unfinished _ =
   assert_bool "Game should NOT be finished"
     (not (Cs3110teamproject.Game_state.is_finished gs))
 
+(* ------------------------------------------------------------- *)
+(* GAME LOGIC MODULE TESTS                                       *)
+(* ------------------------------------------------------------- *)
+
+let test_new_puzzle_id_increments _ =
+  Cs3110teamproject.Game_logic.global_puzzleid_counter := 0;
+  assert_equal 0 (Cs3110teamproject.Game_logic.new_puzzle_id ());
+  assert_equal 1 (Cs3110teamproject.Game_logic.new_puzzle_id ());
+  assert_equal 2 (Cs3110teamproject.Game_logic.new_puzzle_id ())
+
+let test_new_room_id_increments _ =
+  Cs3110teamproject.Game_logic.global_roomid_counter := 0;
+  assert_equal 0 (Cs3110teamproject.Game_logic.new_room_id ());
+  assert_equal 1 (Cs3110teamproject.Game_logic.new_room_id ());
+  assert_equal 2 (Cs3110teamproject.Game_logic.new_room_id ())
+
+let test_chest_puzzle_definition _ =
+  let p = Cs3110teamproject.Game_logic.chest_puzzle in
+
+  assert_equal Cs3110teamproject.Game_logic.chest_id
+    (Cs3110teamproject.Puzzle.puzzle_id p);
+
+  assert_bool "Correct answer should succeed"
+    (Cs3110teamproject.Puzzle.check_answer p "cow");
+
+  assert_bool "Correct answer with capitalization should succeed"
+    (Cs3110teamproject.Puzzle.check_answer p "Cow");
+
+  assert_bool "Incorrect answer should fail"
+    (not (Cs3110teamproject.Puzzle.check_answer p "horse"));
+
+  Cs3110teamproject.Puzzle.try_unlock [] p;
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status p);
+
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status p)
+
+(*Makes sure we have the correct number of rooms upon init*)
+let test_init_game_room_count _ =
+  let gs = Cs3110teamproject.Game_logic.init_game () in
+  let rooms = Cs3110teamproject.Game_state.all_rooms gs in
+  assert_equal 5 (List.length rooms)
+
+(*Makes sure we are starting in the correct room*)
+let test_init_game_start_room _ =
+  let gs = Cs3110teamproject.Game_logic.init_game () in
+  let curr = Cs3110teamproject.Game_state.current_room gs in
+  assert_equal Cs3110teamproject.Game_logic.starting_room_id
+    (Cs3110teamproject.Room.room_id curr);
+  assert_equal Cs3110teamproject.Room.Accessible
+    (Cs3110teamproject.Room.status curr)
+
+let test_corridor_room_puzzle_deps_chain _ =
+  let gs = Cs3110teamproject.Game_logic.init_game () in
+
+  let h1 = Cs3110teamproject.Game_logic.h1_puzzle in
+  let h2 = Cs3110teamproject.Game_logic.h2_puzzle in
+  let h3 = Cs3110teamproject.Game_logic.h3_puzzle in
+  let h4 = Cs3110teamproject.Game_logic.h4_puzzle in
+  let lock = Cs3110teamproject.Game_logic.lock_puzzle in
+
+  (* h1 starts unlocked, h2 locked *)
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status h1);
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status h2);
+
+  Cs3110teamproject.Puzzle.mark_solved h1;
+  Cs3110teamproject.Game_state.solve_puzzle gs
+    ~puzzle_id:(Cs3110teamproject.Puzzle.puzzle_id h1);
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status h2);
+
+  Cs3110teamproject.Puzzle.mark_solved h2;
+  Cs3110teamproject.Game_state.solve_puzzle gs
+    ~puzzle_id:(Cs3110teamproject.Puzzle.puzzle_id h2);
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status h3);
+
+  Cs3110teamproject.Puzzle.mark_solved h3;
+  Cs3110teamproject.Game_state.solve_puzzle gs
+    ~puzzle_id:(Cs3110teamproject.Puzzle.puzzle_id h3);
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status h4);
+
+  Cs3110teamproject.Puzzle.mark_solved h4;
+  Cs3110teamproject.Game_state.solve_puzzle gs
+    ~puzzle_id:(Cs3110teamproject.Puzzle.puzzle_id h4);
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status lock)
+
+let test_stairway_room_puzzle_deps_chain _ =
+  let gs = Cs3110teamproject.Game_logic.init_game () in
+  let torch = Cs3110teamproject.Game_logic.torch_puzzle in
+  let spider = Cs3110teamproject.Game_logic.spider_puzzle in
+  let doorknob = Cs3110teamproject.Game_logic.doorknob_puzzle in
+
+  (*Assuming torch starts unlocked, solving torch unlocks spider puzzle,
+    unlocking spider puzzle then unlocks doorknob puzzle*)
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status torch);
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status spider);
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status doorknob);
+
+  (* 1. Solve torch → this should unlock spider *)
+  Cs3110teamproject.Puzzle.set_status torch Cs3110teamproject.Puzzle.Solved;
+  Cs3110teamproject.Game_state.solve_puzzle gs
+    ~puzzle_id:(Cs3110teamproject.Puzzle.puzzle_id torch);
+
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status spider);
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status doorknob);
+
+  (* 2. Solve spider → this should unlock doorknob *)
+  Cs3110teamproject.Puzzle.set_status spider Cs3110teamproject.Puzzle.Solved;
+  Cs3110teamproject.Game_state.solve_puzzle gs
+    ~puzzle_id:(Cs3110teamproject.Puzzle.puzzle_id spider);
+
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status doorknob)
+
+let test_pottery_room_puzzle_deps_chain _ =
+  let gs = Cs3110teamproject.Game_logic.init_game () in
+  let scroll = Cs3110teamproject.Game_logic.scroll_puzzle in
+  let pot1 = Cs3110teamproject.Game_logic.pot1_puzzle in
+  let pot2 = Cs3110teamproject.Game_logic.pot2_puzzle in
+  let pot3 = Cs3110teamproject.Game_logic.pot3_puzzle in
+  let lockedpot = Cs3110teamproject.Game_logic.lockedpot_puzzle in
+  (*Assuming scroll starts unlocked, solving scroll unlocks pot1 puzzle,
+    unlocking pot1 puzzle then unlocks pot2 puzzle, unlocking pot2 puzzle
+    unlocks pot3 puzzle, unlocking pot3 puzzle unlocks lockedpot puzzle*)
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status scroll);
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status pot1);
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status pot2);
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status pot3);
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status lockedpot);
+
+  (* 1. Solve scroll → this should unlock pot1 *)
+  Cs3110teamproject.Puzzle.set_status scroll Cs3110teamproject.Puzzle.Solved;
+  Cs3110teamproject.Game_state.solve_puzzle gs
+    ~puzzle_id:(Cs3110teamproject.Puzzle.puzzle_id scroll);
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status pot1);
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status pot2);
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status pot3);
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status lockedpot);
+  (* 2. Solve pot1 → this should unlock pot2 *)
+  Cs3110teamproject.Puzzle.set_status pot1 Cs3110teamproject.Puzzle.Solved;
+  Cs3110teamproject.Game_state.solve_puzzle gs
+    ~puzzle_id:(Cs3110teamproject.Puzzle.puzzle_id pot1);
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status pot2);
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status pot3);
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status lockedpot);
+  (* 3. Solve pot2 → this should unlock pot3 *)
+  Cs3110teamproject.Puzzle.set_status pot2 Cs3110teamproject.Puzzle.Solved;
+  Cs3110teamproject.Game_state.solve_puzzle gs
+    ~puzzle_id:(Cs3110teamproject.Puzzle.puzzle_id pot2);
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status pot3);
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status lockedpot);
+  (* 4. Solve pot3 → this should unlock lockedpot *)
+  Cs3110teamproject.Puzzle.set_status pot3 Cs3110teamproject.Puzzle.Solved;
+  Cs3110teamproject.Game_state.solve_puzzle gs
+    ~puzzle_id:(Cs3110teamproject.Puzzle.puzzle_id pot3);
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status lockedpot)
+
+let test_treasure_room_puzzle_deps_chain _ =
+  let gs = Cs3110teamproject.Game_logic.init_game () in
+  let map = Cs3110teamproject.Game_logic.map_puzzle in
+  let lamp = Cs3110teamproject.Game_logic.oillamp_puzzle in
+  let chest = Cs3110teamproject.Game_logic.lockedchest_puzzle in
+
+  (* map start unlocked, lamp and chest locked *)
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status map);
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status lamp);
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status chest);
+  (* 1. Solve map → unlock lamp *)
+  Cs3110teamproject.Puzzle.set_status map Cs3110teamproject.Puzzle.Solved;
+  Cs3110teamproject.Game_state.solve_puzzle gs
+    ~puzzle_id:(Cs3110teamproject.Puzzle.puzzle_id map);
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status lamp);
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status chest);
+  (* 2. Solve lamp → unlock chest *)
+  Cs3110teamproject.Puzzle.set_status lamp Cs3110teamproject.Puzzle.Solved;
+  Cs3110teamproject.Game_state.solve_puzzle gs
+    ~puzzle_id:(Cs3110teamproject.Puzzle.puzzle_id lamp);
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status chest)
+
+(* ------------------------------------------------------------- *)
+(* TEST SUITE                                                    *)
+(* ------------------------------------------------------------- *)
+
 let tests =
   "test suite"
   >::: [
@@ -640,6 +855,19 @@ let tests =
          >:: test_is_finished_true_when_all_solved;
          "Returns false when there are some unsolved puzzles"
          >:: test_is_finished_false_when_unfinished;
+         (* Game Logic Tests *)
+         "New puzzle ID increments correctly" >:: test_new_puzzle_id_increments;
+         "New room ID increments correctly" >:: test_new_room_id_increments;
+         "Chest puzzle definition is correct" >:: test_chest_puzzle_definition;
+         "Init game creates correct number of rooms"
+         >:: test_init_game_room_count;
+         "Init game starts in correct room" >:: test_init_game_start_room;
+         "Corridor room puzzle dependency chain works correctly"
+         >:: test_corridor_room_puzzle_deps_chain;
+         "Stairway room puzzle dependency chain works correctly"
+         >:: test_stairway_room_puzzle_deps_chain;
+         "Pottery room puzzle dependency chain works correctly"
+         >:: test_pottery_room_puzzle_deps_chain;
        ]
 
 let _ = run_test_tt_main tests
