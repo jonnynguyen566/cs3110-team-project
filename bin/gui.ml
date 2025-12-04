@@ -492,6 +492,12 @@ let () =
       ~target_room:Game_logic.treasure_room ~main_layout ~optional:true ()
   in
 
+  let arrow_ending_to_throne =
+    navigation_arrow ~x:5 ~y:382 ~image:"images/backArrow.png"
+      ~target_screen:screen8 ~current_room:Game_logic.ending_room
+      ~target_room:Game_logic.throne_room ~main_layout ~optional:true ()
+  in
+
   L.set_rooms screen3
     [ main_bg_layout; treasure_room; casket_room; arrow_to_corridor ];
   L.set_rooms screen4
@@ -546,7 +552,7 @@ let () =
     ];
 
   L.set_rooms screen9
-    [ ending_bg_layout; hourglass_room; horus_room; sphinx_room ];
+    [ ending_bg_layout; hourglass_room; horus_room; sphinx_room; arrow_ending_to_throne ];
 
   let transition_to_intro2 _ _ _ =
     current_screen := Intro2;
