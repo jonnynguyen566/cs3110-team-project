@@ -13,13 +13,16 @@ type puzzle = {
   ptype : puzzle_type;
   deps : int list;
   mutable status : puzzle_status;
+  success_msg : string;
 }
 
 let puzzle_id p = p.id
 let status p = p.status
+let success_msg p = p.success_msg
+let puzzle_type p = p.ptype
 
-let make ~id ~puzzle_type ~deps =
-  { id; ptype = puzzle_type; deps; status = Locked }
+let make ~id ~puzzle_type ~deps ~success_msg =
+  { id; ptype = puzzle_type; deps; status = Locked; success_msg }
 
 let normalize s = String.lowercase_ascii (String.trim s)
 
@@ -32,6 +35,7 @@ let check_answer p answer =
       | None -> false)
 
 let mark_solved p = p.status <- Solved
+let set_status p new_status = p.status <- new_status
 
 let try_unlock solved_ids p =
   match p.status with
