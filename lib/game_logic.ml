@@ -171,6 +171,38 @@ let lockedpot_puzzle =
       (Riddle ("Enter the three symbol code to unchain this pot.", "@#%"))
     ~deps:[] ~success_msg:"This gave you a key to the next room. Nice. So long."
 
+(* Treasure room puzzles *)
+let map_puzzle =
+  Puzzle.make ~id:15
+    ~puzzle_type:
+      (Riddle
+         ( "Wow, a map! What OCaml higher order programming function lets you \
+            select elements from a list based on a predicate function? (Hint: \
+            it's not List.Map)",
+           "List.Filter" ))
+    ~deps:[] ~success_msg:"I think this map marked X on the oil lamps."
+
+let oillamp_puzzle =
+  Puzzle.make ~id:16
+    ~puzzle_type:
+      (Riddle
+         ( "I hope this bottle has a genie in it. What movie is known for \
+            having a big blue genie that comes out of a magical lamp? ",
+           "Aladdin" ))
+    ~deps:[]
+    ~success_msg:
+      "Perhaps it's time to look at the treasure chest in this treasure room."
+
+let lockedchest_puzzle =
+  Puzzle.make ~id:17
+    ~puzzle_type:
+      (Riddle
+         ( "This lock requires three numbers. 1: How many places can I find a \
+            genie in here? 2: How many treasure chests are there? 3: How many \
+            things can I use as a light source?",
+           "332" ))
+    ~deps:[] ~success_msg:"Goodbye treasure room :("
+
 let starting_room =
   Room.make ~id:0
     ~description:
@@ -199,6 +231,13 @@ let pottery_room =
     ~puzzles:[ torch_puzzle; spider_puzzle; doorknob_puzzle ]
     ~room_deps:[]
 
+let treasure_room =
+  Room.make ~id:3
+    ~description:
+      "A with treasures and a map with a final chest that must be unlocked."
+    ~puzzles:[ map_puzzle; oillamp_puzzle; lockedchest_puzzle ]
+    ~room_deps:[]
+
 let () =
   Puzzle.set_status chest_puzzle Puzzle.Unlocked;
   Puzzle.set_status casket_puzzle Puzzle.Unlocked;
@@ -214,9 +253,15 @@ let () =
   Puzzle.set_status pot1_puzzle Puzzle.Unlocked;
   Puzzle.set_status pot2_puzzle Puzzle.Unlocked;
   Puzzle.set_status pot3_puzzle Puzzle.Unlocked;
-  Puzzle.set_status lockedpot_puzzle Puzzle.Unlocked
+  Puzzle.set_status lockedpot_puzzle Puzzle.Unlocked;
+  Puzzle.set_status map_puzzle Puzzle.Unlocked;
+  Puzzle.set_status oillamp_puzzle Puzzle.Unlocked;
+  Puzzle.set_status lockedchest_puzzle Puzzle.Unlocked
 
 let init_game () =
   Game_state.init
-    ~rooms:[ starting_room; corridor_room; stairway_room; pottery_room ]
+    ~rooms:
+      [
+        starting_room; corridor_room; stairway_room; pottery_room; treasure_room;
+      ]
     ~start:0
