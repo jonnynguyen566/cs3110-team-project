@@ -144,6 +144,9 @@ let () =
   let pot2_puzzle = Game_logic.pot2_puzzle in
   let pot3_puzzle = Game_logic.pot3_puzzle in
   let lockedpot_puzzle = Game_logic.lockedpot_puzzle in
+  let map_puzzle = Game_logic.map_puzzle in
+  let oillamp_puzzle = Game_logic.oillamp_puzzle in
+  let lockedchest_puzzle = Game_logic.lockedchest_puzzle in
 
   let bg_w, bg_h = (1280, 720) in
   let current_screen = ref Intro1 in
@@ -189,6 +192,13 @@ let () =
   in
   let potteryroom_bg_layout = L.resident ~w:bg_w ~h:bg_h pottery_bg in
   let screen6 = L.superpose ~w:bg_w ~h:bg_h [ potteryroom_bg_layout ] in
+
+  (* treasure room *)
+  let treasure_bg =
+    W.image ~w:bg_w ~h:bg_h ~noscale:true "images/treasureroom.jpg"
+  in
+  let treasure_bg_layout = L.resident ~w:bg_w ~h:bg_h treasure_bg in
+  let screen7 = L.superpose ~w:bg_w ~h:bg_h [ treasure_bg_layout ] in
 
   let treasure_room, treasure_state =
     toggle_image ~x:800 ~y:470 ~w:325 ~h:163
@@ -280,6 +290,23 @@ let () =
       ~game_state ~puzzle:lockedpot_puzzle screen6 ()
   in
 
+  (* Treasure room *)
+  let map_room, map_state =
+    toggle_image ~x:420 ~y:425 ~w:300 ~h:120 ~closed_image:"images/map.png"
+      ~open_image:"images/map.png" ~game_state ~puzzle:map_puzzle screen7 ()
+  in
+
+  let oillamp_room, oillamp_state =
+    toggle_image ~x:500 ~y:600 ~w:140 ~h:120 ~closed_image:"images/oillamp.png"
+      ~open_image:"images/oillamp.png" ~game_state ~puzzle:oillamp_puzzle screen7 ()
+  in
+
+  let lockedchest_room, lockedchest_state =
+    toggle_image ~x:820 ~y:370 ~w:280 ~h:280
+      ~closed_image:"images/lockedchest.png" ~open_image:"images/lockedchestopen.png"
+      ~game_state ~puzzle:lockedchest_puzzle screen7 ()
+  in
+
   let main_layout = L.superpose ~w:bg_w ~h:bg_h [ screen1 ] in
   L.auto_scale main_layout;
   L.disable_resize main_layout;
@@ -306,6 +333,7 @@ let () =
     arrow_layout
   in
 
+  (* Arrows between rooms. MAKE OPTIONAL FALSE BEFORE PROD*)
   let arrow_to_corridor =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
       ~target_screen:screen4 
@@ -341,6 +369,7 @@ let () =
       h3_room;
       h4_room;
       arrow_to_stairway;
+      arrow_corridor_to_start;
     ];
   L.set_rooms screen5
     [
@@ -349,6 +378,7 @@ let () =
       spider_room;
       torch_room;
       arrow_to_pottery;
+      arrow_stairway_to_corridor;
     ];
   L.set_rooms screen6
     [
@@ -358,6 +388,16 @@ let () =
       pot2_room;
       pot3_room;
       lockedpot_room;
+      arrow_to_treasure;
+      arrow_pottery_to_stairway;
+    ];
+  L.set_rooms screen7
+    [
+      treasure_bg_layout;
+      oillamp_room;
+      map_room;
+      lockedchest_room;
+      arrow_treasure_to_pottery;
     ];
 
   let transition_to_intro2 _ _ _ =
