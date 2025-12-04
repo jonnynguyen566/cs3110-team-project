@@ -40,6 +40,9 @@ let lockedchest_id = new_puzzle_id ()
 let plant_id = new_puzzle_id ()
 let statue_id = new_puzzle_id ()
 let throne_id = new_puzzle_id ()
+let hourglass_id = new_puzzle_id ()
+let horus_id = new_puzzle_id ()
+let sphinx_id = new_puzzle_id ()
 let starting_room_id = new_room_id ()
 let corridor_room_id = new_room_id ()
 let stairway_room_id = new_room_id ()
@@ -47,6 +50,7 @@ let pottery_room_id = new_room_id ()
 let treasure_room_id = new_room_id ()
 let throne_room_id = new_room_id ()
 let treasure_room_id = new_room_id ()
+let ending_room_id = new_room_id ()
 
 (*Chest puzzle id should be 1*)
 (* starting room puzzles *)
@@ -282,6 +286,47 @@ let throne_puzzle =
     ~success_msg:
       "Don't you want to stay a while? Come back if you ever want to be a king."
 
+(* Ending room puzzles*)
+let hourglass_puzzle =
+  Puzzle.make ~id:hourglass_id
+    ~puzzle_type:
+      (Trivia
+         ( "Which OCaml construct is used to group related values, types, and \
+            functions together under one name?",
+           "module" ))
+    ~deps:[]
+    ~success_msg:
+      "Let Horus gaze where shadows lie, and there you'll find the reason why."
+
+let horus_puzzle =
+  Puzzle.make ~id:horus_id
+    ~puzzle_type:
+      (Trivia
+         ( "To you, it seems I have three. But I only need one to see. I am an \
+            ___",
+           "eye" ))
+    ~deps:[ hourglass_id ]
+    ~success_msg:
+      "Before the light of freedom’s door, a guardian waits who’s watched \
+       before. The Sphinx allows no one to stray - Defeat its test to win your \
+       way."
+
+let sphinx_puzzle =
+  Puzzle.make ~id:sphinx_id
+    ~puzzle_type:
+      (Trivia
+         ( "Twin humps I bear upon my back, \n\
+            but code is where I roam.  \n\
+            In every module, every stack,  \n\
+            the desert is my home.  \n\
+            What am I?",
+           "ocaml" ))
+    ~deps:[ horus_id ]
+    ~success_msg:
+      "Congratulations, seekers! You have conquered the trials, outwitted the \
+       Sphinx, and earned the blessing of the pharaoh. You have escaped the \
+       tomb!"
+
 (* Room creations *)
 let starting_room =
   Room.make ~id:starting_room_id
@@ -349,13 +394,25 @@ let throne_room =
        the walls are cold. If you wish to leave, you’d best start by turning \
        over a new leaf."
 
+let ending_room =
+  Room.make ~id:ending_room_id
+    ~description:
+      "The final chamber that the user must travel through to escape."
+    ~puzzles:[ hourglass_puzzle; horus_puzzle; sphinx_puzzle ]
+    ~room_deps:[]
+    ~intro_msg:
+      "You enter the final chamber. The air shifts… the torches tremble… Time \
+       grows thin here. Look for the vessel that bleeds sand, and hurry before \
+       it runs out."
+
 let () =
   Puzzle.set_status chest_puzzle Puzzle.Unlocked;
   Puzzle.set_status h1_puzzle Puzzle.Unlocked;
   Puzzle.set_status torch_puzzle Puzzle.Unlocked;
   Puzzle.set_status scroll_puzzle Puzzle.Unlocked;
   Puzzle.set_status map_puzzle Puzzle.Unlocked;
-  Puzzle.set_status plant_puzzle Puzzle.Unlocked
+  Puzzle.set_status plant_puzzle Puzzle.Unlocked;
+  Puzzle.set_status hourglass_puzzle Puzzle.Unlocked
 
 let init_game () =
   Game_state.init
@@ -367,5 +424,6 @@ let init_game () =
         pottery_room;
         treasure_room;
         throne_room;
+        ending_room;
       ]
     ~start:0

@@ -20,13 +20,13 @@ let init ~rooms ~start =
     current_room = start_room;
     rooms;
     solved = [];
-    start_time = None;  (* Timer not started yet *)
+    start_time = None;
+    (* Timer not started yet *)
     end_time = None;
   }
 
 let start_timer gs =
-  if gs.start_time = None then
-    gs.start_time <- Some (Unix.time ())
+  if gs.start_time = None then gs.start_time <- Some (Unix.time ())
 
 let all_rooms gs = gs.rooms
 
@@ -67,7 +67,7 @@ let solve_puzzle gs ~puzzle_id =
 
 let elapsed_time gs =
   match gs.start_time with
-  | None -> 0.0  
+  | None -> 0.0
   | Some t_start -> (
       match gs.end_time with
       | Some t_end -> t_end -. t_start

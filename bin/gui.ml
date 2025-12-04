@@ -150,6 +150,9 @@ let () =
   let plant_puzzle = Game_logic.plant_puzzle in
   let statue_puzzle = Game_logic.statue_puzzle in
   let throne_puzzle = Game_logic.throne_puzzle in
+  let hourglass_puzzle = Game_logic.hourglass_puzzle in
+  let horus_puzzle = Game_logic.horus_puzzle in
+  let sphinx_puzzle = Game_logic.sphinx_puzzle in
 
   let bg_w, bg_h = (1280, 720) in
   let current_screen = ref Intro1 in
@@ -209,6 +212,12 @@ let () =
   in
   let throne_bg_layout = L.resident ~w:bg_w ~h:bg_h throne_bg in
   let screen8 = L.superpose ~w:bg_w ~h:bg_h [ throne_bg_layout ] in
+
+  let ending_bg =
+    W.image ~w:bg_w ~h:bg_h ~noscale:true "images/ending_room_closed.png"
+  in
+  let ending_bg_layout = L.resident ~w:bg_w ~h:bg_h ending_bg in
+  let screen9 = L.superpose ~w:bg_w ~h:bg_h [ ending_bg_layout ] in
 
   (* Starting room items*)
   let treasure_room, treasure_state =
@@ -338,6 +347,24 @@ let () =
       ~bg_widget:throne_bg ~new_bg_image:"images/throne_room_exit.jpg"
       ~game_state ~puzzle:throne_puzzle screen8 ()
   in
+  (* Ending room items*)
+  let hourglass_room, hourglass_state =
+    toggle_image ~x:970 ~y:500 ~w:333 ~h:200
+      ~closed_image:"images/hourglass.png"
+      ~open_image:"images/hourglass_broken.png" ~game_state
+      ~puzzle:hourglass_puzzle screen9 ()
+  in
+  let horus_room, horus_state =
+    toggle_image ~x:390 ~y:210 ~w:150 ~h:75 ~closed_image:"images/horus.png"
+      ~open_image:"images/horus_dark.png" ~game_state ~puzzle:horus_puzzle
+      screen9 ()
+  in
+  let sphinx_room, sphinx_state =
+    toggle_image_with_bg_change ~x:500 ~y:250 ~w:500 ~h:250
+      ~closed_image:"images/sphinx.png" ~open_image:"images/transparent.png"
+      ~bg_widget:ending_bg ~new_bg_image:"images/ending_room.png" ~game_state
+      ~puzzle:sphinx_puzzle screen9 ()
+  in
 
   (* Timer display - styled with label for better visibility *)
   let timer_display =
@@ -428,6 +455,12 @@ let () =
       ~target_room:Game_logic.throne_room ~main_layout ~optional:true ()
   in
 
+  let arrow_to_ending =
+    navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
+      ~target_screen:screen9 ~current_room:Game_logic.throne_room
+      ~target_room:Game_logic.ending_room ~main_layout ~optional:true ()
+  in
+
   (* Back arrows. Optional is true. *)
   let arrow_corridor_to_start =
     navigation_arrow ~x:5 ~y:382 ~image:"images/backArrow.png"
@@ -509,7 +542,11 @@ let () =
       statue_room;
       throne_room;
       arrow_throne_to_treasure;
+      arrow_to_ending;
     ];
+
+  L.set_rooms screen9
+    [ ending_bg_layout; hourglass_room; horus_room; sphinx_room ];
 
   let transition_to_intro2 _ _ _ =
     current_screen := Intro2;
