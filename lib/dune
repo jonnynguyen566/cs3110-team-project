@@ -1,3 +1,4 @@
 (library
  (name cs3110teamproject)
+ (libraries unix)
  (instrumentation (backend bisect_ppx)))
