@@ -586,23 +586,8 @@ let test_is_finished_false_when_unfinished _ =
 (* GAME LOGIC MODULE TESTS                                       *)
 (* ------------------------------------------------------------- *)
 
-let test_new_puzzle_id_increments _ =
-  Cs3110teamproject.Game_logic.global_puzzleid_counter := 0;
-  assert_equal 0 (Cs3110teamproject.Game_logic.new_puzzle_id ());
-  assert_equal 1 (Cs3110teamproject.Game_logic.new_puzzle_id ());
-  assert_equal 2 (Cs3110teamproject.Game_logic.new_puzzle_id ())
-
-let test_new_room_id_increments _ =
-  Cs3110teamproject.Game_logic.global_roomid_counter := 0;
-  assert_equal 0 (Cs3110teamproject.Game_logic.new_room_id ());
-  assert_equal 1 (Cs3110teamproject.Game_logic.new_room_id ());
-  assert_equal 2 (Cs3110teamproject.Game_logic.new_room_id ())
-
 let test_chest_puzzle_definition _ =
   let p = Cs3110teamproject.Game_logic.chest_puzzle in
-
-  assert_equal Cs3110teamproject.Game_logic.chest_id
-    (Cs3110teamproject.Puzzle.puzzle_id p);
 
   assert_bool "Correct answer should succeed"
     (Cs3110teamproject.Puzzle.check_answer p "cow");
@@ -624,14 +609,15 @@ let test_chest_puzzle_definition _ =
 let test_init_game_room_count _ =
   let gs = Cs3110teamproject.Game_logic.init_game () in
   let rooms = Cs3110teamproject.Game_state.all_rooms gs in
-  assert_equal 5 (List.length rooms)
+  assert_equal 6 (List.length rooms)
 
 (*Makes sure we are starting in the correct room*)
 let test_init_game_start_room _ =
   let gs = Cs3110teamproject.Game_logic.init_game () in
   let curr = Cs3110teamproject.Game_state.current_room gs in
-  assert_equal Cs3110teamproject.Game_logic.starting_room_id
-    (Cs3110teamproject.Room.room_id curr);
+  let first_room = List.hd (Cs3110teamproject.Game_state.all_rooms gs) in
+  assert_bool "Start room should be the first room in init_game list"
+    (curr == first_room);
   assert_equal Cs3110teamproject.Room.Accessible
     (Cs3110teamproject.Room.status curr)
 
@@ -793,6 +779,34 @@ let test_treasure_room_puzzle_deps_chain _ =
   assert_equal Cs3110teamproject.Puzzle.Unlocked
     (Cs3110teamproject.Puzzle.status chest)
 
+let test_throne_room_puzzle_deps_chain _ =
+  let gs = Cs3110teamproject.Game_logic.init_game () in
+  let plant = Cs3110teamproject.Game_logic.plant_puzzle in
+  let statue = Cs3110teamproject.Game_logic.statue_puzzle in
+  let throne = Cs3110teamproject.Game_logic.throne_puzzle in
+
+  (* plant starts unlocked, statue and throne stays locked*)
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status plant);
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status statue);
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status throne);
+  (* 1. Solve plant → this should unlock statue *)
+  Cs3110teamproject.Puzzle.set_status plant Cs3110teamproject.Puzzle.Solved;
+  Cs3110teamproject.Game_state.solve_puzzle gs
+    ~puzzle_id:(Cs3110teamproject.Puzzle.puzzle_id plant);
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status statue);
+  assert_equal Cs3110teamproject.Puzzle.Locked
+    (Cs3110teamproject.Puzzle.status throne);
+  (* 2. Solve statue → this should unlock throne *)
+  Cs3110teamproject.Puzzle.set_status statue Cs3110teamproject.Puzzle.Solved;
+  Cs3110teamproject.Game_state.solve_puzzle gs
+    ~puzzle_id:(Cs3110teamproject.Puzzle.puzzle_id statue);
+  assert_equal Cs3110teamproject.Puzzle.Unlocked
+    (Cs3110teamproject.Puzzle.status throne)
+
 (* ------------------------------------------------------------- *)
 (* TEST SUITE                                                    *)
 (* ------------------------------------------------------------- *)
@@ -857,8 +871,6 @@ let tests =
          "Returns false when there are some unsolved puzzles"
          >:: test_is_finished_false_when_unfinished;
          (* Game Logic Tests *)
-         "New puzzle ID increments correctly" >:: test_new_puzzle_id_increments;
-         "New room ID increments correctly" >:: test_new_room_id_increments;
          "Chest puzzle definition is correct" >:: test_chest_puzzle_definition;
          "Init game creates correct number of rooms"
          >:: test_init_game_room_count;
@@ -869,6 +881,10 @@ let tests =
          >:: test_stairway_room_puzzle_deps_chain;
          "Pottery room puzzle dependency chain works correctly"
          >:: test_pottery_room_puzzle_deps_chain;
+         "Treasure room puzzle dependency chain works correctly"
+         >:: test_treasure_room_puzzle_deps_chain;
+         "Throne room puzzle dependency chain works correctly"
+         >:: test_throne_room_puzzle_deps_chain;
        ]
 
 let _ = run_test_tt_main tests
