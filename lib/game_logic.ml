@@ -354,16 +354,8 @@ let () =
   Puzzle.set_status h1_puzzle Puzzle.Unlocked;
   Puzzle.set_status torch_puzzle Puzzle.Unlocked;
   Puzzle.set_status scroll_puzzle Puzzle.Unlocked;
-  Puzzle.set_status pot1_puzzle Puzzle.Unlocked;
-  Puzzle.set_status pot2_puzzle Puzzle.Unlocked;
-  Puzzle.set_status pot3_puzzle Puzzle.Unlocked;
-  Puzzle.set_status lockedpot_puzzle Puzzle.Unlocked;
   Puzzle.set_status map_puzzle Puzzle.Unlocked;
-  Puzzle.set_status oillamp_puzzle Puzzle.Unlocked;
-  Puzzle.set_status lockedchest_puzzle Puzzle.Unlocked;
-  Puzzle.set_status scroll_puzzle Puzzle.Unlocked;
-  Puzzle.set_status plant_puzzle Puzzle.Unlocked;
-  Puzzle.set_status map_puzzle Puzzle.Unlocked
+  Puzzle.set_status plant_puzzle Puzzle.Unlocked
 
 let init_game () =
   Game_state.init
