@@ -347,6 +347,7 @@ let () =
       ~bg_widget:throne_bg ~new_bg_image:"images/throne_room_exit.jpg"
       ~game_state ~puzzle:throne_puzzle screen8 ()
   in
+
   (* Ending room items*)
   let hourglass_room, hourglass_state =
     toggle_image ~x:970 ~y:500 ~w:333 ~h:200
@@ -366,7 +367,7 @@ let () =
       ~puzzle:sphinx_puzzle screen9 ()
   in
 
-  (* Timer display - styled with label for better visibility *)
+  (* Timer display *)
   let timer_display =
     W.label ~fg:(Draw.opaque Draw.black) ~size:22 "Time: 00:00"
   in
@@ -424,7 +425,7 @@ let () =
     arrow_layout
   in
 
-  (* Arrows between rooms. MAKE OPTIONAL FALSE BEFORE PROD*)
+  (* Arrows between rooms. *)
   let arrow_to_corridor =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
       ~target_screen:screen4 ~current_room:Game_logic.starting_room
@@ -446,19 +447,19 @@ let () =
   let arrow_to_treasure =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
       ~target_screen:screen7 ~current_room:Game_logic.pottery_room
-      ~target_room:Game_logic.treasure_room ~main_layout ~optional:true ()
+      ~target_room:Game_logic.treasure_room ~main_layout ()
   in
 
   let arrow_to_throneroom =
     navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
       ~target_screen:screen8 ~current_room:Game_logic.treasure_room
-      ~target_room:Game_logic.throne_room ~main_layout ~optional:true ()
+      ~target_room:Game_logic.throne_room ~main_layout ()
   in
 
   let arrow_to_ending =
-    navigation_arrow ~x:1100 ~y:350 ~image:"images/Arrow.png"
+    navigation_arrow ~x:1158 ~y:382 ~image:"images/Arrowcopy.png"
       ~target_screen:screen9 ~current_room:Game_logic.throne_room
-      ~target_room:Game_logic.ending_room ~main_layout ~optional:true ()
+      ~target_room:Game_logic.ending_room ~main_layout ()
   in
 
   (* Back arrows. Optional is true. *)
