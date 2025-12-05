@@ -552,7 +552,13 @@ let () =
     ];
 
   L.set_rooms screen9
-    [ ending_bg_layout; hourglass_room; horus_room; sphinx_room; arrow_ending_to_throne ];
+    [
+      ending_bg_layout;
+      hourglass_room;
+      horus_room;
+      sphinx_room;
+      arrow_ending_to_throne;
+    ];
 
   let transition_to_intro2 _ _ _ =
     current_screen := Intro2;
