@@ -26,6 +26,11 @@ Install Bogue (the GUI package):
 opam install bogue
 ```
 
+Install tsdl (the music package):
+```bash
+opam install tsdl-mixer
+```
+
 Also make sure you have ounit2 installed:
 ```bash
 opam install ounit2
