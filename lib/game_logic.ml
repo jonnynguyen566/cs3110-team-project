@@ -67,7 +67,7 @@ let casket_puzzle =
   Puzzle.make ~id:casket_id
     ~puzzle_type:
       (Trivia
-         ("Does the following definition type check: let x = 2 +. 3.0", "no"))
+         ("Does the following definition type check?: let x = 2 +. 3.0", "no"))
     ~deps:[ chest_id ]
     ~success_msg:
       "You've awakened the mummy... now seize your chance to escape the tomb!"

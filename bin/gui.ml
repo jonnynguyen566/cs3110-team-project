@@ -213,11 +213,19 @@ let () =
   let throne_bg_layout = L.resident ~w:bg_w ~h:bg_h throne_bg in
   let screen8 = L.superpose ~w:bg_w ~h:bg_h [ throne_bg_layout ] in
 
+  (* ending room *)
   let ending_bg =
     W.image ~w:bg_w ~h:bg_h ~noscale:true "images/ending_room_closed.png"
   in
   let ending_bg_layout = L.resident ~w:bg_w ~h:bg_h ending_bg in
   let screen9 = L.superpose ~w:bg_w ~h:bg_h [ ending_bg_layout ] in
+
+  (* closing screen *)
+  let final_bg =
+    W.image ~w:bg_w ~h:bg_h ~noscale:true "images/finishedscene.jpg"
+  in
+  let final_bg_layout = L.resident ~w:bg_w ~h:bg_h final_bg in
+  let screen10 = L.superpose ~w:bg_w ~h:bg_h [ final_bg_layout ] in
 
   (* Starting room items*)
   let treasure_room, treasure_state =
@@ -397,9 +405,9 @@ let () =
 
   let show_screen room = L.set_rooms main_layout [ room; timer_layout ] in
 
-  (* MAKE DEFAULT OPTIONAL FALSE BEFORE PROD *)
+  (* Navigation arrow logic. *)
   let navigation_arrow ~x ~y ~image ~target_screen ~current_room ~target_room
-      ~main_layout ?(optional = true) () =
+      ~main_layout ?(optional = false) () =
     let arrow = W.image ~noscale:true image in
     let arrow_layout = L.resident ~x ~y arrow in
 
@@ -499,6 +507,50 @@ let () =
       ~target_room:Game_logic.throne_room ~main_layout ~optional:true ()
   in
 
+  let show_ending_popup game_state =
+    let final_time = Game_state.elapsed_time game_state in
+    let time_str = Game_state.format_time final_time in
+
+    (* Create scroll background *)
+    let scroll_bg = W.image ~w:450 ~h:350 "images/scrollvert.png" in
+    let scroll_layout = L.resident ~x:420 ~y:150 scroll_bg in
+
+    (* Create ending message text *)
+    let message_text = W.text_display ~w:400 ~h:150 Game_state.ending_message in
+    let message_layout = L.resident ~x:530 ~y:260 message_text in
+
+    (* Create time display *)
+    let time_text = W.label ~size:20 ("Final Time: " ^ time_str) in
+    let time_layout = L.resident ~x:540 ~y:380 time_text in
+
+    (* Update screen10 to include the overlay *)
+    L.set_rooms screen10
+      [ final_bg_layout; scroll_layout; message_layout; time_layout ]
+  in
+
+  let arrow_ending_to_final =
+    let arrow = W.image ~noscale:true "images/Arrowcopy.png" in
+    let arrow_layout = L.resident ~x:1158 ~y:382 arrow in
+
+    let on_click _ _ _ =
+      if Game_state.is_finished game_state then begin
+        show_screen screen10;
+        (* Show popup after brief delay *)
+        ignore (Timeout.add 500 (fun () -> show_ending_popup game_state))
+      end
+      else
+        let popup_msg =
+          "You must solve all the puzzles in this room first to continue!"
+        in
+        let msg_widget = W.text_display ~w:150 ~h:70 popup_msg |> L.resident in
+        Popup.one_button ~button:"OK" ~dst:main_layout msg_widget |> ignore
+    in
+
+    W.connect_main arrow arrow on_click Trigger.buttons_up
+    |> W.add_connection arrow;
+    arrow_layout
+  in
+
   L.set_rooms screen3
     [ main_bg_layout; treasure_room; casket_room; arrow_to_corridor ];
   L.set_rooms screen4
@@ -553,7 +605,14 @@ let () =
     ];
 
   L.set_rooms screen9
-    [ ending_bg_layout; hourglass_room; horus_room; sphinx_room; arrow_ending_to_throne ];
+    [
+      ending_bg_layout;
+      hourglass_room;
+      horus_room;
+      sphinx_room;
+      arrow_ending_to_throne;
+      arrow_ending_to_final;
+    ];
 
   let transition_to_intro2 _ _ _ =
     current_screen := Intro2;
@@ -570,7 +629,6 @@ let () =
     in
     Popup.one_button ~button:"OK" ~dst:screen3 msg_widget |> ignore
   in
-
   (* Connect click handlers to screens *)
   W.connect_main beginning beginning
     (fun ev x y -> if !current_screen = Intro1 then transition_to_intro2 ev x y)

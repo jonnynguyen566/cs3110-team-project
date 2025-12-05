@@ -82,7 +82,11 @@ let format_time seconds =
   else Printf.sprintf "%02d:%02d" m s
 
 let ending_message =
-  "Congratulations! You've solved all the puzzles and escaped!"
+  "You've left the shadows \n\
+  \ and the troubles behind. \n\
+  \ The Pharoah's riddle is solved, \n\
+  \ and the open sands await. \n\
+  \ Well played, explorer."
 
 let intro_message =
   "Welcome to the escape room! Explore the rooms and solve puzzles to progress."
