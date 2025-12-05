@@ -240,9 +240,10 @@ let lockedchest_puzzle =
   Puzzle.make ~id:lockedchest_id
     ~puzzle_type:
       (Riddle
-         ( "This lock requires three numbers. 1: How many places can I find a \
-            genie in here? 2: How many treasure chests are there? 3: How many \
-            things can I use as a light source?",
+         ( "This lock requires three numbers. \n\
+           \ 1: How many places can I find a genie in here? \n\
+           \ 2: How many treasure chests are there? \n\
+           \ 3: How many things can I use as a light source?",
            "332" ))
     ~deps:[ oillamp_id ] ~success_msg:"Goodbye treasure room :("
 
