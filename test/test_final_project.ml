@@ -609,7 +609,7 @@ let test_chest_puzzle_definition _ =
 let test_init_game_room_count _ =
   let gs = Cs3110teamproject.Game_logic.init_game () in
   let rooms = Cs3110teamproject.Game_state.all_rooms gs in
-  assert_equal 6 (List.length rooms)
+  assert_equal 7 (List.length rooms)
 
 (*Makes sure we are starting in the correct room*)
 let test_init_game_start_room _ =
