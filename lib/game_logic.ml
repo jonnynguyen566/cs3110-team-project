@@ -87,10 +87,10 @@ let h1_puzzle =
 let h2_puzzle =
   Puzzle.make ~id:h2_id
     ~puzzle_type:
-      (Trivia
+      (Math
          ( "To decode this hieroglyphic, answer this question: How many humps \
             does a Bactrian camel have?",
-           "2" ))
+           2 ))
     ~deps:[ h1_id ]
     ~success_msg:
       "You must look for the one who stands tall with a bird’s gaze and a \
@@ -110,10 +110,10 @@ let h3_puzzle =
 let h4_puzzle =
   Puzzle.make ~id:h4_id
     ~puzzle_type:
-      (Trivia
+      (Math
          ( "To decode this hieroglyphic, answer this question: How many rows \
             of eyelashes does a camel have to protect them from the sand?",
-           "2" ))
+           2 ))
     ~deps:[ h3_id ]
     ~success_msg:
       "All clues are now in your hands. The challenge awaits you - find the \
