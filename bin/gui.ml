@@ -155,6 +155,10 @@ let () =
   let sphinx_puzzle = Game_logic.sphinx_puzzle in
 
   let bg_w, bg_h = (1280, 720) in
+  (* Arrow positions relative to window dimensions *)
+  let back_arrow_x = 20 in
+  let forward_arrow_x = bg_w - 142 in  (* 142 = arrow width + 20px margin *)
+  let arrow_y = 382 in
   let current_screen = ref Intro1 in
   let intro_bg = W.image ~noscale:true "images/starting_room_blurry.png" in
   let intro_bg_layout = L.resident ~w:bg_w ~h:bg_h intro_bg in
@@ -435,74 +439,74 @@ let () =
 
   (* Arrows between rooms. *)
   let arrow_to_corridor =
-    navigation_arrow ~x:1138 ~y:382 ~image:"images/Arrowcopy.png"
+    navigation_arrow ~x:forward_arrow_x ~y:arrow_y ~image:"images/Arrowcopy.png"
       ~target_screen:screen4 ~current_room:Game_logic.starting_room
       ~target_room:Game_logic.corridor_room ~main_layout ()
   in
 
   let arrow_to_stairway =
-    navigation_arrow ~x:1138 ~y:382 ~image:"images/Arrowcopy.png"
+    navigation_arrow ~x:forward_arrow_x ~y:arrow_y ~image:"images/Arrowcopy.png"
       ~target_screen:screen5 ~current_room:Game_logic.corridor_room
       ~target_room:Game_logic.stairway_room ~main_layout ()
   in
 
   let arrow_to_pottery =
-    navigation_arrow ~x:1138 ~y:382 ~image:"images/Arrowcopy.png"
+    navigation_arrow ~x:forward_arrow_x ~y:arrow_y ~image:"images/Arrowcopy.png"
       ~target_screen:screen6 ~current_room:Game_logic.stairway_room
       ~target_room:Game_logic.pottery_room ~main_layout ()
   in
 
   let arrow_to_treasure =
-    navigation_arrow ~x:1138 ~y:382 ~image:"images/Arrowcopy.png"
+    navigation_arrow ~x:forward_arrow_x ~y:arrow_y ~image:"images/Arrowcopy.png"
       ~target_screen:screen7 ~current_room:Game_logic.pottery_room
       ~target_room:Game_logic.treasure_room ~main_layout ()
   in
 
   let arrow_to_throneroom =
-    navigation_arrow ~x:1138 ~y:382 ~image:"images/Arrowcopy.png"
+    navigation_arrow ~x:forward_arrow_x ~y:arrow_y ~image:"images/Arrowcopy.png"
       ~target_screen:screen8 ~current_room:Game_logic.treasure_room
       ~target_room:Game_logic.throne_room ~main_layout ()
   in
 
   let arrow_to_ending =
-    navigation_arrow ~x:1138 ~y:382 ~image:"images/Arrowcopy.png"
+    navigation_arrow ~x:forward_arrow_x ~y:arrow_y ~image:"images/Arrowcopy.png"
       ~target_screen:screen9 ~current_room:Game_logic.throne_room
       ~target_room:Game_logic.ending_room ~main_layout ()
   in
 
   (* Back arrows. Optional is true. *)
   let arrow_corridor_to_start =
-    navigation_arrow ~x:20 ~y:382 ~image:"images/backArrow.png"
+    navigation_arrow ~x:back_arrow_x ~y:arrow_y ~image:"images/backArrow.png"
       ~target_screen:screen3 ~current_room:Game_logic.corridor_room
       ~target_room:Game_logic.starting_room ~main_layout ~optional:true ()
   in
 
   let arrow_stairway_to_corridor =
-    navigation_arrow ~x:20 ~y:382 ~image:"images/backArrow.png"
+    navigation_arrow ~x:back_arrow_x ~y:arrow_y ~image:"images/backArrow.png"
       ~target_screen:screen4 ~current_room:Game_logic.stairway_room
       ~target_room:Game_logic.corridor_room ~main_layout ~optional:true ()
   in
 
   let arrow_pottery_to_stairway =
-    navigation_arrow ~x:20 ~y:382 ~image:"images/backArrow.png"
+    navigation_arrow ~x:back_arrow_x ~y:arrow_y ~image:"images/backArrow.png"
       ~target_screen:screen5 ~current_room:Game_logic.pottery_room
       ~target_room:Game_logic.stairway_room ~main_layout ~optional:true ()
   in
 
   let arrow_treasure_to_pottery =
-    navigation_arrow ~x:20 ~y:382 ~image:"images/backArrow.png"
+    navigation_arrow ~x:back_arrow_x ~y:arrow_y ~image:"images/backArrow.png"
       ~target_screen:screen6 ~current_room:Game_logic.treasure_room
       ~target_room:Game_logic.pottery_room ~main_layout ~optional:true ()
   in
 
   let arrow_throne_to_treasure =
-    navigation_arrow ~x:20 ~y:382 ~image:"images/backArrow.png"
+    navigation_arrow ~x:back_arrow_x ~y:arrow_y ~image:"images/backArrow.png"
       ~target_screen:screen7 ~current_room:Game_logic.throne_room
       ~target_room:Game_logic.treasure_room ~main_layout ~optional:true ()
   in
 
   let arrow_ending_to_throne =
-    navigation_arrow ~x:20 ~y:382 ~image:"images/backArrow.png"
+    navigation_arrow ~x:back_arrow_x ~y:arrow_y ~image:"images/backArrow.png"
       ~target_screen:screen8 ~current_room:Game_logic.ending_room
       ~target_room:Game_logic.throne_room ~main_layout ~optional:true ()
   in
@@ -530,7 +534,7 @@ let () =
 
   let arrow_ending_to_final =
     let arrow = W.image ~noscale:true "images/Arrowcopy.png" in
-    let arrow_layout = L.resident ~x:1158 ~y:382 arrow in
+    let arrow_layout = L.resident ~x:forward_arrow_x ~y:arrow_y arrow in
 
     let on_click _ _ _ =
       if Game_state.is_finished game_state then begin
