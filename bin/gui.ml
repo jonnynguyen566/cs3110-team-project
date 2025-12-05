@@ -28,7 +28,8 @@ let play_background_music file =
   match Mixer.load_mus file with
   | Error (`Msg e) -> Printf.eprintf "Could not load music: %s\n" e
   | Ok music ->
-      let _ = Mixer.play_music music (-1) in (* -1 = loop forever *)
+      let _ = Mixer.play_music music (-1) in
+      (* -1 = loop forever *)
       ()
 
 (*actual pop up for when the user toggles an image that has a hint*)

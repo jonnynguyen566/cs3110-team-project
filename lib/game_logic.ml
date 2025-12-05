@@ -82,7 +82,8 @@ let h1_puzzle =
            6 ))
     ~deps:[]
     ~success_msg:
-      "Remember your answers! Now, seek the one who sits in silence, legs bent, watching from the side."
+      "Remember your answers! Now, seek the one who sits in silence, legs \
+       bent, watching from the side."
 
 let h2_puzzle =
   Puzzle.make ~id:h2_id
@@ -105,7 +106,8 @@ let h3_puzzle =
            9 ))
     ~deps:[ h2_id ]
     ~success_msg:
-      "To reveal the final clue, seek the twin currents that flow side by side. Don't forget your previous answers...or else"
+      "To reveal the final clue, seek the twin currents that flow side by \
+       side. Don't forget your previous answers...or else"
 
 let h4_puzzle =
   Puzzle.make ~id:h4_id
