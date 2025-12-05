@@ -1,5 +1,4 @@
 open OUnit2
-open Cs3110teamproject.Hints
 open Cs3110teamproject.Puzzle
 open Cs3110teamproject.Room
 open Cs3110teamproject.Game_state
@@ -408,60 +407,6 @@ let test_attempt_enter_accessible _ =
     (Cs3110teamproject.Room.status room)
 
 (* ------------------------------------------------------------- *)
-(* HINT MODULE TESTS                                             *)
-(* ------------------------------------------------------------- *)
-
-(* Basic test to make sure that registering a hint changes the hash table and is
-   accessible with get *)
-let test_register_and_get_hint _ =
-  register_hint ~puzzle_id:1 "hint";
-  assert_equal (Some "hint") (get_hint 1)
-
-(* A puzzle that doesn't exist should not have a hint in the hash table *)
-let test_get_invalid_hint _ = assert_equal None (get_hint 999)
-
-(* Registering a different hint for the same puzzle should overwrite the old
-   hint *)
-let test_change_hint _ =
-  register_hint ~puzzle_id:5 "hint1";
-  register_hint ~puzzle_id:5 "hint2";
-  assert_equal (Some "hint2") (get_hint 5)
-
-(* Registering two hints *)
-let test_two_hints _ =
-  register_hint ~puzzle_id:1 "hint1";
-  register_hint ~puzzle_id:2 "hint2";
-  assert_equal (Some "hint1") (get_hint 1);
-  assert_equal (Some "hint2") (get_hint 2)
-
-(* Registering three hints *)
-let test_three_hints _ =
-  register_hint ~puzzle_id:1 "hint1";
-  register_hint ~puzzle_id:2 "hint2";
-  register_hint ~puzzle_id:3 "hint3";
-  assert_equal (Some "hint1") (get_hint 1);
-  assert_equal (Some "hint2") (get_hint 2);
-  assert_equal (Some "hint3") (get_hint 3)
-
-(* Registering three hints and overwriting all of them *)
-let test_change_three_hints _ =
-  register_hint ~puzzle_id:1 "hint1";
-  register_hint ~puzzle_id:2 "hint2";
-  register_hint ~puzzle_id:3 "hint3";
-  register_hint ~puzzle_id:1 "newhint1";
-  register_hint ~puzzle_id:2 "newhint2";
-  register_hint ~puzzle_id:3 "newhint3";
-  assert_equal (Some "newhint1") (get_hint 1);
-  assert_equal (Some "newhint2") (get_hint 2);
-  assert_equal (Some "newhint3") (get_hint 3)
-
-(* Combining puzzle creation and hint registration*)
-let test_hint_with_puzzle _ =
-  let p = mk_riddle 67 "What is the best CS class" "3110" in
-  register_hint ~puzzle_id:(puzzle_id p) "Add 3000 and 110";
-  assert_equal (Some "Add 3000 and 110") (get_hint (puzzle_id p))
-
-(* ------------------------------------------------------------- *)
 (* GAME STATE MODULE TESTS                                       *)
 (* ------------------------------------------------------------- *)
 
@@ -609,7 +554,7 @@ let test_chest_puzzle_definition _ =
 let test_init_game_room_count _ =
   let gs = Cs3110teamproject.Game_logic.init_game () in
   let rooms = Cs3110teamproject.Game_state.all_rooms gs in
-  assert_equal 6 (List.length rooms)
+  assert_equal 7 (List.length rooms)
 
 (*Makes sure we are starting in the correct room*)
 let test_init_game_start_room _ =
@@ -844,14 +789,6 @@ let tests =
          "attempt enter inaccessible deps solved"
          >:: test_attempt_enter_inaccessible_deps_solved;
          "attempt enter accessible" >:: test_attempt_enter_accessible;
-         (* Hint Tests *)
-         "Basic register and get hint" >:: test_register_and_get_hint;
-         "An invalid hint should return none" >:: test_get_invalid_hint;
-         "Changes a hint in the table" >:: test_change_hint;
-         "Two hints" >:: test_two_hints;
-         "Three hints" >:: test_three_hints;
-         "Changes three hints" >:: test_change_three_hints;
-         "Basic hint and puzzle interaction" >:: test_hint_with_puzzle;
          (* Game State Tests *)
          "First room should be accessible" >:: test_start_room_accessible;
          "Access list of all the rooms in the current game state"
