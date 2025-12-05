@@ -156,8 +156,8 @@ let () =
 
   let bg_w, bg_h = (1280, 720) in
   (* Arrow positions relative to window dimensions *)
-  let back_arrow_x = 20 in
-  let forward_arrow_x = bg_w - 132 in  (* 142 = arrow width + 20px margin *)
+  let back_arrow_x = 80 in
+  let forward_arrow_x = 1118 in 
   let arrow_y = 382 in
   let current_screen = ref Intro1 in
   let intro_bg = W.image ~noscale:true "images/starting_room_blurry.png" in
@@ -253,7 +253,7 @@ let () =
       ~game_state ~puzzle:lock_puzzle screen4 ()
   in
   let h1_room, h1_state =
-    toggle_image ~x:1030 ~y:400 ~w:125 ~h:125 ~closed_image:"images/h_1.png"
+    toggle_image ~x:1010 ~y:400 ~w:125 ~h:125 ~closed_image:"images/h_1.png"
       ~open_image:"images/h1_dark.png" ~game_state ~puzzle:h1_puzzle screen4 ()
   in
 
