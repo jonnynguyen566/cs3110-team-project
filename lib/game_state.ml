@@ -1,6 +1,5 @@
 open Room
 open Puzzle
-open Hints
 
 type t = {
   mutable current_room : Room.room;
