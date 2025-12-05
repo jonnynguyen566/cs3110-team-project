@@ -1,3 +1,22 @@
+(**
+  AF: The module represents an in-game room in the escape room game:
+    - Each [room] value corresponds to one room that the player can enter.
+    - In each room, it consists of
+        - a unique integer ID
+        - a textual description of the room
+        - a list of puzzles contained in the room
+        - a list of dependency room IDs that must be accessible before this room can be accessible to the player
+        - a mutable status indicating whether the room is Inaccessible or Accessible
+        - an introductory message displayed when the player first enters the room
+  RI:
+    - [id] is a unique non-negative integer.
+    - [description] is a non-empty string describing the room.
+    - [puzzles] contains only puzzles that belong to this room.
+    - [room_deps] contains valid room IDs that must be accessible before this room can unlock.
+    - [status] is [Inaccessible] initially, becomes [Accessible] when all dependent rooms' puzzles are solved.
+    - [intro_msg] is a non-empty string displayed when the player first enters the room.
+*)
+
 (** Abstract room status, accessibility of the room *)
 type room_status =
   | Inaccessible

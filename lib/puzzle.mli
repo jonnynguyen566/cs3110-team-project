@@ -1,3 +1,24 @@
+(** 
+  AF: The module represents an in-game puzzle in the escape room game:
+    - Each [puzzle] value corresponds to one puzzle that the player can solve.
+    - In each puzzle, it consists of
+        - a unique integer ID
+        - a puzzle type (riddle, math, trivia)
+        - a list of dependency puzzle IDs that must be solved before this puzzle can be accessible to the player
+        - a success message displayed upon solving the puzzle
+        - a mutable status indicating whether the puzzle is Locked, Unlocked, or Solved
+
+  RI:
+  - [id] is a globally unique non-negative integer.
+  - [status] is [Locked] initially, becomes [Unlocked] when all dependent puzzles are solved,
+    and becomes [Solved] after [mark_solved] is called.
+  - [status] can only transition: [Locked] to [Unlocked] to [Solved].
+    It can never transition backwards.
+  - [puzzle_type] contains the question and correct answer.
+  - [success_msg] is a non-empty string displayed when the puzzle is solved. It is a hint that leads the player to the next clue
+  - Dependencies in [deps] are valid puzzle IDs that must all be solved before this puzzle can unlock.
+*)
+
 (** Abstract puzzle status *)
 type puzzle_status =
   | Locked
