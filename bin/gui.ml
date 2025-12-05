@@ -157,7 +157,7 @@ let () =
   let bg_w, bg_h = (1280, 720) in
   (* Arrow positions relative to window dimensions *)
   let back_arrow_x = 20 in
-  let forward_arrow_x = bg_w - 142 in  (* 142 = arrow width + 20px margin *)
+  let forward_arrow_x = bg_w - 132 in  (* 142 = arrow width + 20px margin *)
   let arrow_y = 382 in
   let current_screen = ref Intro1 in
   let intro_bg = W.image ~noscale:true "images/starting_room_blurry.png" in
