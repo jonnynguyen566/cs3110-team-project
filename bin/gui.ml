@@ -250,6 +250,7 @@ let () =
   in
   let h1_room, h1_state =
     toggle_image ~x:1010 ~y:400 ~w:125 ~h:125 ~closed_image:"images/h_1.png"
+    toggle_image ~x:1010 ~y:400 ~w:125 ~h:125 ~closed_image:"images/h_1.png"
       ~open_image:"images/h1_dark.png" ~game_state ~puzzle:h1_puzzle screen4 ()
   in
 
