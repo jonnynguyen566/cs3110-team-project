@@ -5,6 +5,7 @@ module Puzzle = Cs3110teamproject.Puzzle
 module Room = Cs3110teamproject.Room
 module W = Widget
 module L = Layout
+module Mixer = Tsdl_mixer.Mixer
 
 (** type for state for objects that can be toggled *)
 type toggle_state =
@@ -16,6 +17,19 @@ type screen_state =
   | Intro1
   | Intro2
   | StartingRoom
+
+(* Initialize audio system before creating the game *)
+let init_audio () =
+  match Mixer.open_audio 44100 Mixer.default_format 2 2048 with
+  | Error (`Msg e) -> Printf.eprintf "Could not open audio: %s\n" e
+  | Ok () -> ()
+
+let play_background_music file =
+  match Mixer.load_mus file with
+  | Error (`Msg e) -> Printf.eprintf "Could not load music: %s\n" e
+  | Ok music ->
+      let _ = Mixer.play_music music (-1) in (* -1 = loop forever *)
+      ()
 
 (*actual pop up for when the user toggles an image that has a hint*)
 let puzzle_popup (game_state : Game_state.t) (puzzle : Puzzle.puzzle) on_correct
@@ -128,6 +142,9 @@ let toggle_image_with_bg_change ?w ?h ?x ?y ?(noscale = false) ~closed_image
 
 (* actual display logic *)
 let () =
+  init_audio ();
+  play_background_music "music/3110bgmusic.ogg";
+
   let game_state = Game_logic.init_game () in
   let chest_puzzle = Game_logic.chest_puzzle in
   let casket_puzzle = Game_logic.casket_puzzle in
